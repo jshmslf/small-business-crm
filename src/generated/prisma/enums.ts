@@ -9,9 +9,7 @@
 * 🟢 You can import this file directly.
 */
 
-export const PlatformRole = {
-  SUPER_ADMIN: 'SUPER_ADMIN',
-  USER: 'USER'
-} as const
 
-export type PlatformRole = (typeof PlatformRole)[keyof typeof PlatformRole]
+
+// This file is empty because there are no enums in the schema.
+export {}

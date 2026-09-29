@@ -27,19 +27,19 @@ export type AggregateMembershipRole = {
 export type MembershipRoleMinAggregateOutputType = {
   membershipId: string | null
   roleId: string | null
-  assginedAt: Date | null
+  assignedAt: Date | null
 }
 
 export type MembershipRoleMaxAggregateOutputType = {
   membershipId: string | null
   roleId: string | null
-  assginedAt: Date | null
+  assignedAt: Date | null
 }
 
 export type MembershipRoleCountAggregateOutputType = {
   membershipId: number
   roleId: number
-  assginedAt: number
+  assignedAt: number
   _all: number
 }
 
@@ -47,19 +47,19 @@ export type MembershipRoleCountAggregateOutputType = {
 export type MembershipRoleMinAggregateInputType = {
   membershipId?: true
   roleId?: true
-  assginedAt?: true
+  assignedAt?: true
 }
 
 export type MembershipRoleMaxAggregateInputType = {
   membershipId?: true
   roleId?: true
-  assginedAt?: true
+  assignedAt?: true
 }
 
 export type MembershipRoleCountAggregateInputType = {
   membershipId?: true
   roleId?: true
-  assginedAt?: true
+  assignedAt?: true
   _all?: true
 }
 
@@ -138,7 +138,7 @@ export type MembershipRoleGroupByArgs<ExtArgs extends runtime.Types.Extensions.I
 export type MembershipRoleGroupByOutputType = {
   membershipId: string
   roleId: string
-  assginedAt: Date
+  assignedAt: Date
   _count: MembershipRoleCountAggregateOutputType | null
   _min: MembershipRoleMinAggregateOutputType | null
   _max: MembershipRoleMaxAggregateOutputType | null
@@ -165,7 +165,7 @@ export type MembershipRoleWhereInput = {
   NOT?: Prisma.MembershipRoleWhereInput | Prisma.MembershipRoleWhereInput[]
   membershipId?: Prisma.StringFilter<"MembershipRole"> | string
   roleId?: Prisma.StringFilter<"MembershipRole"> | string
-  assginedAt?: Prisma.DateTimeFilter<"MembershipRole"> | Date | string
+  assignedAt?: Prisma.DateTimeFilter<"MembershipRole"> | Date | string
   membership?: Prisma.XOR<Prisma.MembershipScalarRelationFilter, Prisma.MembershipWhereInput>
   role?: Prisma.XOR<Prisma.RoleScalarRelationFilter, Prisma.RoleWhereInput>
 }
@@ -173,7 +173,7 @@ export type MembershipRoleWhereInput = {
 export type MembershipRoleOrderByWithRelationInput = {
   membershipId?: Prisma.SortOrder
   roleId?: Prisma.SortOrder
-  assginedAt?: Prisma.SortOrder
+  assignedAt?: Prisma.SortOrder
   membership?: Prisma.MembershipOrderByWithRelationInput
   role?: Prisma.RoleOrderByWithRelationInput
 }
@@ -185,7 +185,7 @@ export type MembershipRoleWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.MembershipRoleWhereInput | Prisma.MembershipRoleWhereInput[]
   membershipId?: Prisma.StringFilter<"MembershipRole"> | string
   roleId?: Prisma.StringFilter<"MembershipRole"> | string
-  assginedAt?: Prisma.DateTimeFilter<"MembershipRole"> | Date | string
+  assignedAt?: Prisma.DateTimeFilter<"MembershipRole"> | Date | string
   membership?: Prisma.XOR<Prisma.MembershipScalarRelationFilter, Prisma.MembershipWhereInput>
   role?: Prisma.XOR<Prisma.RoleScalarRelationFilter, Prisma.RoleWhereInput>
 }, "membershipId_roleId">
@@ -193,7 +193,7 @@ export type MembershipRoleWhereUniqueInput = Prisma.AtLeast<{
 export type MembershipRoleOrderByWithAggregationInput = {
   membershipId?: Prisma.SortOrder
   roleId?: Prisma.SortOrder
-  assginedAt?: Prisma.SortOrder
+  assignedAt?: Prisma.SortOrder
   _count?: Prisma.MembershipRoleCountOrderByAggregateInput
   _max?: Prisma.MembershipRoleMaxOrderByAggregateInput
   _min?: Prisma.MembershipRoleMinOrderByAggregateInput
@@ -205,11 +205,11 @@ export type MembershipRoleScalarWhereWithAggregatesInput = {
   NOT?: Prisma.MembershipRoleScalarWhereWithAggregatesInput | Prisma.MembershipRoleScalarWhereWithAggregatesInput[]
   membershipId?: Prisma.StringWithAggregatesFilter<"MembershipRole"> | string
   roleId?: Prisma.StringWithAggregatesFilter<"MembershipRole"> | string
-  assginedAt?: Prisma.DateTimeWithAggregatesFilter<"MembershipRole"> | Date | string
+  assignedAt?: Prisma.DateTimeWithAggregatesFilter<"MembershipRole"> | Date | string
 }
 
 export type MembershipRoleCreateInput = {
-  assginedAt?: Date | string
+  assignedAt?: Date | string
   membership: Prisma.MembershipCreateNestedOneWithoutRolesInput
   role: Prisma.RoleCreateNestedOneWithoutMembersInput
 }
@@ -217,11 +217,11 @@ export type MembershipRoleCreateInput = {
 export type MembershipRoleUncheckedCreateInput = {
   membershipId: string
   roleId: string
-  assginedAt?: Date | string
+  assignedAt?: Date | string
 }
 
 export type MembershipRoleUpdateInput = {
-  assginedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assignedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   membership?: Prisma.MembershipUpdateOneRequiredWithoutRolesNestedInput
   role?: Prisma.RoleUpdateOneRequiredWithoutMembersNestedInput
 }
@@ -229,23 +229,23 @@ export type MembershipRoleUpdateInput = {
 export type MembershipRoleUncheckedUpdateInput = {
   membershipId?: Prisma.StringFieldUpdateOperationsInput | string
   roleId?: Prisma.StringFieldUpdateOperationsInput | string
-  assginedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assignedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type MembershipRoleCreateManyInput = {
   membershipId: string
   roleId: string
-  assginedAt?: Date | string
+  assignedAt?: Date | string
 }
 
 export type MembershipRoleUpdateManyMutationInput = {
-  assginedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assignedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type MembershipRoleUncheckedUpdateManyInput = {
   membershipId?: Prisma.StringFieldUpdateOperationsInput | string
   roleId?: Prisma.StringFieldUpdateOperationsInput | string
-  assginedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assignedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type MembershipRoleListRelationFilter = {
@@ -266,19 +266,19 @@ export type MembershipRoleMembershipIdRoleIdCompoundUniqueInput = {
 export type MembershipRoleCountOrderByAggregateInput = {
   membershipId?: Prisma.SortOrder
   roleId?: Prisma.SortOrder
-  assginedAt?: Prisma.SortOrder
+  assignedAt?: Prisma.SortOrder
 }
 
 export type MembershipRoleMaxOrderByAggregateInput = {
   membershipId?: Prisma.SortOrder
   roleId?: Prisma.SortOrder
-  assginedAt?: Prisma.SortOrder
+  assignedAt?: Prisma.SortOrder
 }
 
 export type MembershipRoleMinOrderByAggregateInput = {
   membershipId?: Prisma.SortOrder
   roleId?: Prisma.SortOrder
-  assginedAt?: Prisma.SortOrder
+  assignedAt?: Prisma.SortOrder
 }
 
 export type MembershipRoleCreateNestedManyWithoutRoleInput = {
@@ -366,13 +366,13 @@ export type MembershipRoleUncheckedUpdateManyWithoutMembershipNestedInput = {
 }
 
 export type MembershipRoleCreateWithoutRoleInput = {
-  assginedAt?: Date | string
+  assignedAt?: Date | string
   membership: Prisma.MembershipCreateNestedOneWithoutRolesInput
 }
 
 export type MembershipRoleUncheckedCreateWithoutRoleInput = {
   membershipId: string
-  assginedAt?: Date | string
+  assignedAt?: Date | string
 }
 
 export type MembershipRoleCreateOrConnectWithoutRoleInput = {
@@ -407,17 +407,17 @@ export type MembershipRoleScalarWhereInput = {
   NOT?: Prisma.MembershipRoleScalarWhereInput | Prisma.MembershipRoleScalarWhereInput[]
   membershipId?: Prisma.StringFilter<"MembershipRole"> | string
   roleId?: Prisma.StringFilter<"MembershipRole"> | string
-  assginedAt?: Prisma.DateTimeFilter<"MembershipRole"> | Date | string
+  assignedAt?: Prisma.DateTimeFilter<"MembershipRole"> | Date | string
 }
 
 export type MembershipRoleCreateWithoutMembershipInput = {
-  assginedAt?: Date | string
+  assignedAt?: Date | string
   role: Prisma.RoleCreateNestedOneWithoutMembersInput
 }
 
 export type MembershipRoleUncheckedCreateWithoutMembershipInput = {
   roleId: string
-  assginedAt?: Date | string
+  assignedAt?: Date | string
 }
 
 export type MembershipRoleCreateOrConnectWithoutMembershipInput = {
@@ -448,42 +448,42 @@ export type MembershipRoleUpdateManyWithWhereWithoutMembershipInput = {
 
 export type MembershipRoleCreateManyRoleInput = {
   membershipId: string
-  assginedAt?: Date | string
+  assignedAt?: Date | string
 }
 
 export type MembershipRoleUpdateWithoutRoleInput = {
-  assginedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assignedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   membership?: Prisma.MembershipUpdateOneRequiredWithoutRolesNestedInput
 }
 
 export type MembershipRoleUncheckedUpdateWithoutRoleInput = {
   membershipId?: Prisma.StringFieldUpdateOperationsInput | string
-  assginedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assignedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type MembershipRoleUncheckedUpdateManyWithoutRoleInput = {
   membershipId?: Prisma.StringFieldUpdateOperationsInput | string
-  assginedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assignedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type MembershipRoleCreateManyMembershipInput = {
   roleId: string
-  assginedAt?: Date | string
+  assignedAt?: Date | string
 }
 
 export type MembershipRoleUpdateWithoutMembershipInput = {
-  assginedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assignedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.RoleUpdateOneRequiredWithoutMembersNestedInput
 }
 
 export type MembershipRoleUncheckedUpdateWithoutMembershipInput = {
   roleId?: Prisma.StringFieldUpdateOperationsInput | string
-  assginedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assignedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type MembershipRoleUncheckedUpdateManyWithoutMembershipInput = {
   roleId?: Prisma.StringFieldUpdateOperationsInput | string
-  assginedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assignedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -491,7 +491,7 @@ export type MembershipRoleUncheckedUpdateManyWithoutMembershipInput = {
 export type MembershipRoleSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   membershipId?: boolean
   roleId?: boolean
-  assginedAt?: boolean
+  assignedAt?: boolean
   membership?: boolean | Prisma.MembershipDefaultArgs<ExtArgs>
   role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["membershipRole"]>
@@ -499,7 +499,7 @@ export type MembershipRoleSelect<ExtArgs extends runtime.Types.Extensions.Intern
 export type MembershipRoleSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   membershipId?: boolean
   roleId?: boolean
-  assginedAt?: boolean
+  assignedAt?: boolean
   membership?: boolean | Prisma.MembershipDefaultArgs<ExtArgs>
   role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["membershipRole"]>
@@ -507,7 +507,7 @@ export type MembershipRoleSelectCreateManyAndReturn<ExtArgs extends runtime.Type
 export type MembershipRoleSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   membershipId?: boolean
   roleId?: boolean
-  assginedAt?: boolean
+  assignedAt?: boolean
   membership?: boolean | Prisma.MembershipDefaultArgs<ExtArgs>
   role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["membershipRole"]>
@@ -515,10 +515,10 @@ export type MembershipRoleSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
 export type MembershipRoleSelectScalar = {
   membershipId?: boolean
   roleId?: boolean
-  assginedAt?: boolean
+  assignedAt?: boolean
 }
 
-export type MembershipRoleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"membershipId" | "roleId" | "assginedAt", ExtArgs["result"]["membershipRole"]>
+export type MembershipRoleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"membershipId" | "roleId" | "assignedAt", ExtArgs["result"]["membershipRole"]>
 export type MembershipRoleInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   membership?: boolean | Prisma.MembershipDefaultArgs<ExtArgs>
   role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>
@@ -541,7 +541,7 @@ export type $MembershipRolePayload<ExtArgs extends runtime.Types.Extensions.Inte
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     membershipId: string
     roleId: string
-    assginedAt: Date
+    assignedAt: Date
   }, ExtArgs["result"]["membershipRole"]>
   composites: {}
 }
@@ -969,7 +969,7 @@ export interface Prisma__MembershipRoleClient<T, Null = never, ExtArgs extends r
 export interface MembershipRoleFieldRefs {
   readonly membershipId: Prisma.FieldRef<"MembershipRole", 'String'>
   readonly roleId: Prisma.FieldRef<"MembershipRole", 'String'>
-  readonly assginedAt: Prisma.FieldRef<"MembershipRole", 'DateTime'>
+  readonly assignedAt: Prisma.FieldRef<"MembershipRole", 'DateTime'>
 }
     
 

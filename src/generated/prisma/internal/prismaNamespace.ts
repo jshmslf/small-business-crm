@@ -1134,7 +1134,6 @@ export const UserScalarFieldEnum = {
   id: 'id',
   email: 'email',
   name: 'name',
-  platformRole: 'platformRole',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   emailVerified: 'emailVerified',
@@ -1189,7 +1188,7 @@ export type MembershipScalarFieldEnum = (typeof MembershipScalarFieldEnum)[keyof
 export const MembershipRoleScalarFieldEnum = {
   membershipId: 'membershipId',
   roleId: 'roleId',
-  assginedAt: 'assginedAt'
+  assignedAt: 'assignedAt'
 } as const
 
 export type MembershipRoleScalarFieldEnum = (typeof MembershipRoleScalarFieldEnum)[keyof typeof MembershipRoleScalarFieldEnum]
@@ -1296,20 +1295,6 @@ export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 
  * Reference to a field of type 'String[]'
  */
 export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String[]'>
-    
-
-
-/**
- * Reference to a field of type 'PlatformRole'
- */
-export type EnumPlatformRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PlatformRole'>
-    
-
-
-/**
- * Reference to a field of type 'PlatformRole[]'
- */
-export type ListEnumPlatformRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PlatformRole[]'>
     
 
 
