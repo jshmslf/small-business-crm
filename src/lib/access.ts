@@ -68,3 +68,30 @@ export function canManageRole(access: Access, role: { position: number; isOwnerR
     if (role.isOwnerRole) return false;
     return access.isOwner || role.position < access.highestPosition;
 }
+
+export async function getActiveMembers(businessId: string) {
+    const members = await prisma.membership.findMany({
+        where: { businessId, isActive: true },
+        include: { user: { select: { name: true } } },
+        orderBy: { joinedAt: "asc" },
+    });
+    return members.map((m) => ({ id: m.id, name: m.user.name }));
+}
+
+// Inventory
+export async function getItemFormOptions(businessId: string) {
+    const [sellers, categoryRows] = await Promise.all([
+        prisma.seller.findMany({
+            where: { businessId },
+            select: { id: true, name: true },
+            orderBy: { name: "asc" },
+        }),
+        prisma.item.findMany({
+            where: { businessId, category: { not: null } },
+            select: { category: true },
+            distinct: ["category"],
+            orderBy: { category: "asc" },
+        }),
+    ]);
+    return { sellers, categories: categoryRows.map((r) => r.category!) };
+}

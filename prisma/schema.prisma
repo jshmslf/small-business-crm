@@ -29,15 +29,20 @@ model User {
 }
 
 model Business {
-  id          String       @id @default(cuid())
-  name        String
-  slug        String       @unique
-  isSuspended Boolean      @default(false)
-  roles       Role[]
-  members     Membership[]
-  invitations Invitation[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id              String       @id @default(cuid())
+  name            String
+  slug            String       @unique
+  isSuspended     Boolean      @default(false)
+  roles           Role[]
+  members         Membership[]
+  invitations     Invitation[]
+  customers       Customer[]
+  sellers         Seller[]
+  items           Item[]
+  orders          Order[]
+  nextOrderNumber Int          @default(1001)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 }
 
 model Role {
@@ -58,14 +63,17 @@ model Role {
 }
 
 model Membership {
-  id         String           @id @default(cuid())
-  userId     String
-  businessId String
-  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  business   Business         @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  roles      MembershipRole[]
-  isActive   Boolean          @default(true)
-  joinedAt   DateTime         @default(now())
+  id                String           @id @default(cuid())
+  userId            String
+  businessId        String
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  business          Business         @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  roles             MembershipRole[]
+  isActive          Boolean          @default(true)
+  joinedAt          DateTime         @default(now())
+  assignedCustomers Customer[]
+  createdOrders     Order[]
+  recordedPayments  Payment[]
 
   @@unique([userId, businessId])
   @@index([businessId])
@@ -146,4 +154,226 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+enum CustomerSource {
+  WEBSITE
+  FACEBOOK
+  INSTAGRAM
+  WALK_IN
+  REFERRAL
+  OTHER
+}
+
+enum CustomerStatus {
+  LEAD
+  ACTIVE
+  REPEAT
+  INACTIVE
+}
+
+model Customer {
+  id           String         @id @default(cuid())
+  businessId   String
+  business     Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  firstName    String
+  lastName     String?
+  phone        String?
+  email        String?
+  facebookName String?
+  address      String?
+  city         String?
+  source       CustomerSource @default(FACEBOOK)
+  status       CustomerStatus @default(LEAD)
+  lookingFor   String?
+  notes        String?
+  assignedToId String?
+  assignedTo   Membership?    @relation(fields: [assignedToId], references: [id], onDelete: Cascade)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  orders       Order[]
+
+  @@index([businessId])
+  @@index([businessId, status])
+}
+
+model Seller {
+  id           String   @id @default(cuid())
+  businessId   String
+  business     Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name         String
+  phone        String?
+  email        String?
+  facebookName String?
+  address      String?
+  notes        String?
+  items        Item[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([businessId])
+}
+
+enum ItemCondition {
+  BRAND_NEW
+  LIKE_NEW
+  GOOD
+  FAIR
+  FOR_PARTS
+}
+
+enum ItemStatus {
+  DRAFT
+  AVAILABLE
+  RESERVED
+  SOLD
+  ARCHIVED
+}
+
+model Item {
+  id           String        @id @default(cuid())
+  businessId   String
+  business     Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name         String
+  description  String?
+  category     String?
+  sku          String?
+  condition    ItemCondition @default(GOOD)
+  status       ItemStatus    @default(AVAILABLE)
+  quantity     Int           @default(1)
+  costPrice    Int?
+  sellingPrice Int
+  sellerId     String?
+  seller       Seller?       @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  images       ItemImage[]
+  acquiredAt   DateTime?
+  soldAt       DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  orderItems   OrderItem[]
+
+  @@unique([businessId, sku])
+  @@index([businessId])
+  @@index([businessId, status])
+}
+
+model ItemImage {
+  id        String   @id @default(cuid())
+  itemId    String
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  url       String
+  publicId  String
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([itemId])
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum OrderChannel {
+  WALK_IN
+  FACEBOOK
+  INSTAGRAM
+  WEBSITE
+  OTHER
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIAL
+  PAID
+}
+
+enum PaymentMethod {
+  CASH
+  GCASH
+  MAYA
+  BANK_TRANSFER
+  COD
+  CARD
+  OTHER
+}
+
+enum FulfillmentType {
+  PICKUP // customer picks up at the store
+  MEETUP // meet somewhere to hand over
+  DELIVERY // you or a rider delivers
+  SHIPPING // courier (J&T, LBC, etc.)
+}
+
+enum FulfillmentStatus {
+  PENDING
+  READY
+  SHIPPED
+  DELIVERED
+}
+
+model Order {
+  id                String            @id @default(cuid())
+  businessId        String
+  business          Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  orderNumber       Int // per business: #1001, #1002...
+  customerId        String?
+  customer          Customer?         @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  channel           OrderChannel      @default(FACEBOOK)
+  status            OrderStatus       @default(PENDING)
+  paymentStatus     PaymentStatus     @default(UNPAID)
+  subtotal          Int // all money in centavos
+  discount          Int               @default(0)
+  shippingFee       Int               @default(0)
+  total             Int
+  amountPaid        Int               @default(0)
+  fulfillmentType   FulfillmentType   @default(PICKUP)
+  fulfillmentStatus FulfillmentStatus @default(PENDING)
+  deliveryAddress   String?
+  notes             String?
+  createdById       String?
+  createdBy         Membership?       @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  items             OrderItem[]
+  payments          Payment[]
+  completedAt       DateTime?
+  cancelledAt       DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@unique([businessId, orderNumber])
+  @@index([businessId, status])
+  @@index([customerId])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  itemId    String?
+  item      Item?   @relation(fields: [itemId], references: [id], onDelete: SetNull)
+  name      String // snapshot of the item name at time of sale
+  unitPrice Int // snapshot of the selling price
+  unitCost  Int? // snapshot of the buying price, for profit reports
+  quantity  Int
+
+  @@index([orderId])
+  @@index([itemId])
+}
+
+model Payment {
+  id           String        @id @default(cuid())
+  orderId      String
+  order        Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amount       Int // centavos
+  method       PaymentMethod
+  reference    String? // e.g. GCash reference number
+  notes        String?
+  recordedById String?
+  recordedBy   Membership?   @relation(fields: [recordedById], references: [id], onDelete: SetNull)
+  paidAt       DateTime      @default(now())
+  createdAt    DateTime      @default(now())
+
+  @@index([orderId])
 }

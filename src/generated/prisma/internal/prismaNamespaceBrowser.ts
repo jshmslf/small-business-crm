@@ -59,7 +59,14 @@ export const ModelName = {
   Invitation: 'Invitation',
   Session: 'Session',
   Account: 'Account',
-  Verification: 'Verification'
+  Verification: 'Verification',
+  Customer: 'Customer',
+  Seller: 'Seller',
+  Item: 'Item',
+  ItemImage: 'ItemImage',
+  Order: 'Order',
+  OrderItem: 'OrderItem',
+  Payment: 'Payment'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -101,6 +108,7 @@ export const BusinessScalarFieldEnum = {
   name: 'name',
   slug: 'slug',
   isSuspended: 'isSuspended',
+  nextOrderNumber: 'nextOrderNumber',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -200,6 +208,133 @@ export const VerificationScalarFieldEnum = {
 } as const
 
 export type VerificationScalarFieldEnum = (typeof VerificationScalarFieldEnum)[keyof typeof VerificationScalarFieldEnum]
+
+
+export const CustomerScalarFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  firstName: 'firstName',
+  lastName: 'lastName',
+  phone: 'phone',
+  email: 'email',
+  facebookName: 'facebookName',
+  address: 'address',
+  city: 'city',
+  source: 'source',
+  status: 'status',
+  lookingFor: 'lookingFor',
+  notes: 'notes',
+  assignedToId: 'assignedToId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CustomerScalarFieldEnum = (typeof CustomerScalarFieldEnum)[keyof typeof CustomerScalarFieldEnum]
+
+
+export const SellerScalarFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  name: 'name',
+  phone: 'phone',
+  email: 'email',
+  facebookName: 'facebookName',
+  address: 'address',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SellerScalarFieldEnum = (typeof SellerScalarFieldEnum)[keyof typeof SellerScalarFieldEnum]
+
+
+export const ItemScalarFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  name: 'name',
+  description: 'description',
+  category: 'category',
+  sku: 'sku',
+  condition: 'condition',
+  status: 'status',
+  quantity: 'quantity',
+  costPrice: 'costPrice',
+  sellingPrice: 'sellingPrice',
+  sellerId: 'sellerId',
+  acquiredAt: 'acquiredAt',
+  soldAt: 'soldAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ItemScalarFieldEnum = (typeof ItemScalarFieldEnum)[keyof typeof ItemScalarFieldEnum]
+
+
+export const ItemImageScalarFieldEnum = {
+  id: 'id',
+  itemId: 'itemId',
+  url: 'url',
+  publicId: 'publicId',
+  position: 'position',
+  createdAt: 'createdAt'
+} as const
+
+export type ItemImageScalarFieldEnum = (typeof ItemImageScalarFieldEnum)[keyof typeof ItemImageScalarFieldEnum]
+
+
+export const OrderScalarFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  orderNumber: 'orderNumber',
+  customerId: 'customerId',
+  channel: 'channel',
+  status: 'status',
+  paymentStatus: 'paymentStatus',
+  subtotal: 'subtotal',
+  discount: 'discount',
+  shippingFee: 'shippingFee',
+  total: 'total',
+  amountPaid: 'amountPaid',
+  fulfillmentType: 'fulfillmentType',
+  fulfillmentStatus: 'fulfillmentStatus',
+  deliveryAddress: 'deliveryAddress',
+  notes: 'notes',
+  createdById: 'createdById',
+  completedAt: 'completedAt',
+  cancelledAt: 'cancelledAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
+
+
+export const OrderItemScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  itemId: 'itemId',
+  name: 'name',
+  unitPrice: 'unitPrice',
+  unitCost: 'unitCost',
+  quantity: 'quantity'
+} as const
+
+export type OrderItemScalarFieldEnum = (typeof OrderItemScalarFieldEnum)[keyof typeof OrderItemScalarFieldEnum]
+
+
+export const PaymentScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  amount: 'amount',
+  method: 'method',
+  reference: 'reference',
+  notes: 'notes',
+  recordedById: 'recordedById',
+  paidAt: 'paidAt',
+  createdAt: 'createdAt'
+} as const
+
+export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
 
 
 export const SortOrder = {

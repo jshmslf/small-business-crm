@@ -17,6 +17,9 @@ export default async function BusinessLayout({
     const nav = [
         { href: base, label: "Home", show: true },
         { href: `${base}/customers`, label: "Customers", show: can(access, PERMISSIONS.CUSTOMERS_VIEW) },
+        { href: `${base}/orders`, label: "Orders", show: can(access, PERMISSIONS.ORDERS_VIEW) },
+        { href: `${base}/inventory`, label: "Inventory", show: can(access, PERMISSIONS.INVENTORY_VIEW) },
+        { href: `${base}/sellers`, label: "Sellers", show: can(access, PERMISSIONS.INVENTORY_VIEW) },
         { href: `${base}/team`, label: "Team", show: can(access, PERMISSIONS.TEAM_VIEW) },
         { href: `${base}/roles`, label: "Roles", show: can(access, PERMISSIONS.ROLES_MANAGE) },
         { href: `${base}/settings`, label: "Settings", show: can(access, PERMISSIONS.BUSINESS_MANAGE) },

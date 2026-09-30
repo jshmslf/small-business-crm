@@ -185,6 +185,9 @@ export type MembershipWhereInput = {
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   business?: Prisma.XOR<Prisma.BusinessScalarRelationFilter, Prisma.BusinessWhereInput>
   roles?: Prisma.MembershipRoleListRelationFilter
+  assignedCustomers?: Prisma.CustomerListRelationFilter
+  createdOrders?: Prisma.OrderListRelationFilter
+  recordedPayments?: Prisma.PaymentListRelationFilter
 }
 
 export type MembershipOrderByWithRelationInput = {
@@ -196,6 +199,9 @@ export type MembershipOrderByWithRelationInput = {
   user?: Prisma.UserOrderByWithRelationInput
   business?: Prisma.BusinessOrderByWithRelationInput
   roles?: Prisma.MembershipRoleOrderByRelationAggregateInput
+  assignedCustomers?: Prisma.CustomerOrderByRelationAggregateInput
+  createdOrders?: Prisma.OrderOrderByRelationAggregateInput
+  recordedPayments?: Prisma.PaymentOrderByRelationAggregateInput
 }
 
 export type MembershipWhereUniqueInput = Prisma.AtLeast<{
@@ -211,6 +217,9 @@ export type MembershipWhereUniqueInput = Prisma.AtLeast<{
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   business?: Prisma.XOR<Prisma.BusinessScalarRelationFilter, Prisma.BusinessWhereInput>
   roles?: Prisma.MembershipRoleListRelationFilter
+  assignedCustomers?: Prisma.CustomerListRelationFilter
+  createdOrders?: Prisma.OrderListRelationFilter
+  recordedPayments?: Prisma.PaymentListRelationFilter
 }, "id" | "userId_businessId">
 
 export type MembershipOrderByWithAggregationInput = {
@@ -242,6 +251,9 @@ export type MembershipCreateInput = {
   user: Prisma.UserCreateNestedOneWithoutMembershipsInput
   business: Prisma.BusinessCreateNestedOneWithoutMembersInput
   roles?: Prisma.MembershipRoleCreateNestedManyWithoutMembershipInput
+  assignedCustomers?: Prisma.CustomerCreateNestedManyWithoutAssignedToInput
+  createdOrders?: Prisma.OrderCreateNestedManyWithoutCreatedByInput
+  recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByInput
 }
 
 export type MembershipUncheckedCreateInput = {
@@ -251,6 +263,9 @@ export type MembershipUncheckedCreateInput = {
   isActive?: boolean
   joinedAt?: Date | string
   roles?: Prisma.MembershipRoleUncheckedCreateNestedManyWithoutMembershipInput
+  assignedCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutAssignedToInput
+  createdOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutCreatedByInput
+  recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByInput
 }
 
 export type MembershipUpdateInput = {
@@ -260,6 +275,9 @@ export type MembershipUpdateInput = {
   user?: Prisma.UserUpdateOneRequiredWithoutMembershipsNestedInput
   business?: Prisma.BusinessUpdateOneRequiredWithoutMembersNestedInput
   roles?: Prisma.MembershipRoleUpdateManyWithoutMembershipNestedInput
+  assignedCustomers?: Prisma.CustomerUpdateManyWithoutAssignedToNestedInput
+  createdOrders?: Prisma.OrderUpdateManyWithoutCreatedByNestedInput
+  recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByNestedInput
 }
 
 export type MembershipUncheckedUpdateInput = {
@@ -269,6 +287,9 @@ export type MembershipUncheckedUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   roles?: Prisma.MembershipRoleUncheckedUpdateManyWithoutMembershipNestedInput
+  assignedCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutAssignedToNestedInput
+  createdOrders?: Prisma.OrderUncheckedUpdateManyWithoutCreatedByNestedInput
+  recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByNestedInput
 }
 
 export type MembershipCreateManyInput = {
@@ -335,6 +356,11 @@ export type MembershipMinOrderByAggregateInput = {
 export type MembershipScalarRelationFilter = {
   is?: Prisma.MembershipWhereInput
   isNot?: Prisma.MembershipWhereInput
+}
+
+export type MembershipNullableScalarRelationFilter = {
+  is?: Prisma.MembershipWhereInput | null
+  isNot?: Prisma.MembershipWhereInput | null
 }
 
 export type MembershipCreateNestedManyWithoutUserInput = {
@@ -435,12 +461,63 @@ export type MembershipUpdateOneRequiredWithoutRolesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.MembershipUpdateToOneWithWhereWithoutRolesInput, Prisma.MembershipUpdateWithoutRolesInput>, Prisma.MembershipUncheckedUpdateWithoutRolesInput>
 }
 
+export type MembershipCreateNestedOneWithoutAssignedCustomersInput = {
+  create?: Prisma.XOR<Prisma.MembershipCreateWithoutAssignedCustomersInput, Prisma.MembershipUncheckedCreateWithoutAssignedCustomersInput>
+  connectOrCreate?: Prisma.MembershipCreateOrConnectWithoutAssignedCustomersInput
+  connect?: Prisma.MembershipWhereUniqueInput
+}
+
+export type MembershipUpdateOneWithoutAssignedCustomersNestedInput = {
+  create?: Prisma.XOR<Prisma.MembershipCreateWithoutAssignedCustomersInput, Prisma.MembershipUncheckedCreateWithoutAssignedCustomersInput>
+  connectOrCreate?: Prisma.MembershipCreateOrConnectWithoutAssignedCustomersInput
+  upsert?: Prisma.MembershipUpsertWithoutAssignedCustomersInput
+  disconnect?: Prisma.MembershipWhereInput | boolean
+  delete?: Prisma.MembershipWhereInput | boolean
+  connect?: Prisma.MembershipWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MembershipUpdateToOneWithWhereWithoutAssignedCustomersInput, Prisma.MembershipUpdateWithoutAssignedCustomersInput>, Prisma.MembershipUncheckedUpdateWithoutAssignedCustomersInput>
+}
+
+export type MembershipCreateNestedOneWithoutCreatedOrdersInput = {
+  create?: Prisma.XOR<Prisma.MembershipCreateWithoutCreatedOrdersInput, Prisma.MembershipUncheckedCreateWithoutCreatedOrdersInput>
+  connectOrCreate?: Prisma.MembershipCreateOrConnectWithoutCreatedOrdersInput
+  connect?: Prisma.MembershipWhereUniqueInput
+}
+
+export type MembershipUpdateOneWithoutCreatedOrdersNestedInput = {
+  create?: Prisma.XOR<Prisma.MembershipCreateWithoutCreatedOrdersInput, Prisma.MembershipUncheckedCreateWithoutCreatedOrdersInput>
+  connectOrCreate?: Prisma.MembershipCreateOrConnectWithoutCreatedOrdersInput
+  upsert?: Prisma.MembershipUpsertWithoutCreatedOrdersInput
+  disconnect?: Prisma.MembershipWhereInput | boolean
+  delete?: Prisma.MembershipWhereInput | boolean
+  connect?: Prisma.MembershipWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MembershipUpdateToOneWithWhereWithoutCreatedOrdersInput, Prisma.MembershipUpdateWithoutCreatedOrdersInput>, Prisma.MembershipUncheckedUpdateWithoutCreatedOrdersInput>
+}
+
+export type MembershipCreateNestedOneWithoutRecordedPaymentsInput = {
+  create?: Prisma.XOR<Prisma.MembershipCreateWithoutRecordedPaymentsInput, Prisma.MembershipUncheckedCreateWithoutRecordedPaymentsInput>
+  connectOrCreate?: Prisma.MembershipCreateOrConnectWithoutRecordedPaymentsInput
+  connect?: Prisma.MembershipWhereUniqueInput
+}
+
+export type MembershipUpdateOneWithoutRecordedPaymentsNestedInput = {
+  create?: Prisma.XOR<Prisma.MembershipCreateWithoutRecordedPaymentsInput, Prisma.MembershipUncheckedCreateWithoutRecordedPaymentsInput>
+  connectOrCreate?: Prisma.MembershipCreateOrConnectWithoutRecordedPaymentsInput
+  upsert?: Prisma.MembershipUpsertWithoutRecordedPaymentsInput
+  disconnect?: Prisma.MembershipWhereInput | boolean
+  delete?: Prisma.MembershipWhereInput | boolean
+  connect?: Prisma.MembershipWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MembershipUpdateToOneWithWhereWithoutRecordedPaymentsInput, Prisma.MembershipUpdateWithoutRecordedPaymentsInput>, Prisma.MembershipUncheckedUpdateWithoutRecordedPaymentsInput>
+}
+
 export type MembershipCreateWithoutUserInput = {
   id?: string
   isActive?: boolean
   joinedAt?: Date | string
   business: Prisma.BusinessCreateNestedOneWithoutMembersInput
   roles?: Prisma.MembershipRoleCreateNestedManyWithoutMembershipInput
+  assignedCustomers?: Prisma.CustomerCreateNestedManyWithoutAssignedToInput
+  createdOrders?: Prisma.OrderCreateNestedManyWithoutCreatedByInput
+  recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByInput
 }
 
 export type MembershipUncheckedCreateWithoutUserInput = {
@@ -449,6 +526,9 @@ export type MembershipUncheckedCreateWithoutUserInput = {
   isActive?: boolean
   joinedAt?: Date | string
   roles?: Prisma.MembershipRoleUncheckedCreateNestedManyWithoutMembershipInput
+  assignedCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutAssignedToInput
+  createdOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutCreatedByInput
+  recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByInput
 }
 
 export type MembershipCreateOrConnectWithoutUserInput = {
@@ -494,6 +574,9 @@ export type MembershipCreateWithoutBusinessInput = {
   joinedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutMembershipsInput
   roles?: Prisma.MembershipRoleCreateNestedManyWithoutMembershipInput
+  assignedCustomers?: Prisma.CustomerCreateNestedManyWithoutAssignedToInput
+  createdOrders?: Prisma.OrderCreateNestedManyWithoutCreatedByInput
+  recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByInput
 }
 
 export type MembershipUncheckedCreateWithoutBusinessInput = {
@@ -502,6 +585,9 @@ export type MembershipUncheckedCreateWithoutBusinessInput = {
   isActive?: boolean
   joinedAt?: Date | string
   roles?: Prisma.MembershipRoleUncheckedCreateNestedManyWithoutMembershipInput
+  assignedCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutAssignedToInput
+  createdOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutCreatedByInput
+  recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByInput
 }
 
 export type MembershipCreateOrConnectWithoutBusinessInput = {
@@ -536,6 +622,9 @@ export type MembershipCreateWithoutRolesInput = {
   joinedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutMembershipsInput
   business: Prisma.BusinessCreateNestedOneWithoutMembersInput
+  assignedCustomers?: Prisma.CustomerCreateNestedManyWithoutAssignedToInput
+  createdOrders?: Prisma.OrderCreateNestedManyWithoutCreatedByInput
+  recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByInput
 }
 
 export type MembershipUncheckedCreateWithoutRolesInput = {
@@ -544,6 +633,9 @@ export type MembershipUncheckedCreateWithoutRolesInput = {
   businessId: string
   isActive?: boolean
   joinedAt?: Date | string
+  assignedCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutAssignedToInput
+  createdOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutCreatedByInput
+  recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByInput
 }
 
 export type MembershipCreateOrConnectWithoutRolesInput = {
@@ -568,6 +660,9 @@ export type MembershipUpdateWithoutRolesInput = {
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutMembershipsNestedInput
   business?: Prisma.BusinessUpdateOneRequiredWithoutMembersNestedInput
+  assignedCustomers?: Prisma.CustomerUpdateManyWithoutAssignedToNestedInput
+  createdOrders?: Prisma.OrderUpdateManyWithoutCreatedByNestedInput
+  recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByNestedInput
 }
 
 export type MembershipUncheckedUpdateWithoutRolesInput = {
@@ -576,6 +671,189 @@ export type MembershipUncheckedUpdateWithoutRolesInput = {
   businessId?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assignedCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutAssignedToNestedInput
+  createdOrders?: Prisma.OrderUncheckedUpdateManyWithoutCreatedByNestedInput
+  recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByNestedInput
+}
+
+export type MembershipCreateWithoutAssignedCustomersInput = {
+  id?: string
+  isActive?: boolean
+  joinedAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutMembershipsInput
+  business: Prisma.BusinessCreateNestedOneWithoutMembersInput
+  roles?: Prisma.MembershipRoleCreateNestedManyWithoutMembershipInput
+  createdOrders?: Prisma.OrderCreateNestedManyWithoutCreatedByInput
+  recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByInput
+}
+
+export type MembershipUncheckedCreateWithoutAssignedCustomersInput = {
+  id?: string
+  userId: string
+  businessId: string
+  isActive?: boolean
+  joinedAt?: Date | string
+  roles?: Prisma.MembershipRoleUncheckedCreateNestedManyWithoutMembershipInput
+  createdOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutCreatedByInput
+  recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByInput
+}
+
+export type MembershipCreateOrConnectWithoutAssignedCustomersInput = {
+  where: Prisma.MembershipWhereUniqueInput
+  create: Prisma.XOR<Prisma.MembershipCreateWithoutAssignedCustomersInput, Prisma.MembershipUncheckedCreateWithoutAssignedCustomersInput>
+}
+
+export type MembershipUpsertWithoutAssignedCustomersInput = {
+  update: Prisma.XOR<Prisma.MembershipUpdateWithoutAssignedCustomersInput, Prisma.MembershipUncheckedUpdateWithoutAssignedCustomersInput>
+  create: Prisma.XOR<Prisma.MembershipCreateWithoutAssignedCustomersInput, Prisma.MembershipUncheckedCreateWithoutAssignedCustomersInput>
+  where?: Prisma.MembershipWhereInput
+}
+
+export type MembershipUpdateToOneWithWhereWithoutAssignedCustomersInput = {
+  where?: Prisma.MembershipWhereInput
+  data: Prisma.XOR<Prisma.MembershipUpdateWithoutAssignedCustomersInput, Prisma.MembershipUncheckedUpdateWithoutAssignedCustomersInput>
+}
+
+export type MembershipUpdateWithoutAssignedCustomersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutMembershipsNestedInput
+  business?: Prisma.BusinessUpdateOneRequiredWithoutMembersNestedInput
+  roles?: Prisma.MembershipRoleUpdateManyWithoutMembershipNestedInput
+  createdOrders?: Prisma.OrderUpdateManyWithoutCreatedByNestedInput
+  recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByNestedInput
+}
+
+export type MembershipUncheckedUpdateWithoutAssignedCustomersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  businessId?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  roles?: Prisma.MembershipRoleUncheckedUpdateManyWithoutMembershipNestedInput
+  createdOrders?: Prisma.OrderUncheckedUpdateManyWithoutCreatedByNestedInput
+  recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByNestedInput
+}
+
+export type MembershipCreateWithoutCreatedOrdersInput = {
+  id?: string
+  isActive?: boolean
+  joinedAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutMembershipsInput
+  business: Prisma.BusinessCreateNestedOneWithoutMembersInput
+  roles?: Prisma.MembershipRoleCreateNestedManyWithoutMembershipInput
+  assignedCustomers?: Prisma.CustomerCreateNestedManyWithoutAssignedToInput
+  recordedPayments?: Prisma.PaymentCreateNestedManyWithoutRecordedByInput
+}
+
+export type MembershipUncheckedCreateWithoutCreatedOrdersInput = {
+  id?: string
+  userId: string
+  businessId: string
+  isActive?: boolean
+  joinedAt?: Date | string
+  roles?: Prisma.MembershipRoleUncheckedCreateNestedManyWithoutMembershipInput
+  assignedCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutAssignedToInput
+  recordedPayments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRecordedByInput
+}
+
+export type MembershipCreateOrConnectWithoutCreatedOrdersInput = {
+  where: Prisma.MembershipWhereUniqueInput
+  create: Prisma.XOR<Prisma.MembershipCreateWithoutCreatedOrdersInput, Prisma.MembershipUncheckedCreateWithoutCreatedOrdersInput>
+}
+
+export type MembershipUpsertWithoutCreatedOrdersInput = {
+  update: Prisma.XOR<Prisma.MembershipUpdateWithoutCreatedOrdersInput, Prisma.MembershipUncheckedUpdateWithoutCreatedOrdersInput>
+  create: Prisma.XOR<Prisma.MembershipCreateWithoutCreatedOrdersInput, Prisma.MembershipUncheckedCreateWithoutCreatedOrdersInput>
+  where?: Prisma.MembershipWhereInput
+}
+
+export type MembershipUpdateToOneWithWhereWithoutCreatedOrdersInput = {
+  where?: Prisma.MembershipWhereInput
+  data: Prisma.XOR<Prisma.MembershipUpdateWithoutCreatedOrdersInput, Prisma.MembershipUncheckedUpdateWithoutCreatedOrdersInput>
+}
+
+export type MembershipUpdateWithoutCreatedOrdersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutMembershipsNestedInput
+  business?: Prisma.BusinessUpdateOneRequiredWithoutMembersNestedInput
+  roles?: Prisma.MembershipRoleUpdateManyWithoutMembershipNestedInput
+  assignedCustomers?: Prisma.CustomerUpdateManyWithoutAssignedToNestedInput
+  recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByNestedInput
+}
+
+export type MembershipUncheckedUpdateWithoutCreatedOrdersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  businessId?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  roles?: Prisma.MembershipRoleUncheckedUpdateManyWithoutMembershipNestedInput
+  assignedCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutAssignedToNestedInput
+  recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByNestedInput
+}
+
+export type MembershipCreateWithoutRecordedPaymentsInput = {
+  id?: string
+  isActive?: boolean
+  joinedAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutMembershipsInput
+  business: Prisma.BusinessCreateNestedOneWithoutMembersInput
+  roles?: Prisma.MembershipRoleCreateNestedManyWithoutMembershipInput
+  assignedCustomers?: Prisma.CustomerCreateNestedManyWithoutAssignedToInput
+  createdOrders?: Prisma.OrderCreateNestedManyWithoutCreatedByInput
+}
+
+export type MembershipUncheckedCreateWithoutRecordedPaymentsInput = {
+  id?: string
+  userId: string
+  businessId: string
+  isActive?: boolean
+  joinedAt?: Date | string
+  roles?: Prisma.MembershipRoleUncheckedCreateNestedManyWithoutMembershipInput
+  assignedCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutAssignedToInput
+  createdOrders?: Prisma.OrderUncheckedCreateNestedManyWithoutCreatedByInput
+}
+
+export type MembershipCreateOrConnectWithoutRecordedPaymentsInput = {
+  where: Prisma.MembershipWhereUniqueInput
+  create: Prisma.XOR<Prisma.MembershipCreateWithoutRecordedPaymentsInput, Prisma.MembershipUncheckedCreateWithoutRecordedPaymentsInput>
+}
+
+export type MembershipUpsertWithoutRecordedPaymentsInput = {
+  update: Prisma.XOR<Prisma.MembershipUpdateWithoutRecordedPaymentsInput, Prisma.MembershipUncheckedUpdateWithoutRecordedPaymentsInput>
+  create: Prisma.XOR<Prisma.MembershipCreateWithoutRecordedPaymentsInput, Prisma.MembershipUncheckedCreateWithoutRecordedPaymentsInput>
+  where?: Prisma.MembershipWhereInput
+}
+
+export type MembershipUpdateToOneWithWhereWithoutRecordedPaymentsInput = {
+  where?: Prisma.MembershipWhereInput
+  data: Prisma.XOR<Prisma.MembershipUpdateWithoutRecordedPaymentsInput, Prisma.MembershipUncheckedUpdateWithoutRecordedPaymentsInput>
+}
+
+export type MembershipUpdateWithoutRecordedPaymentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutMembershipsNestedInput
+  business?: Prisma.BusinessUpdateOneRequiredWithoutMembersNestedInput
+  roles?: Prisma.MembershipRoleUpdateManyWithoutMembershipNestedInput
+  assignedCustomers?: Prisma.CustomerUpdateManyWithoutAssignedToNestedInput
+  createdOrders?: Prisma.OrderUpdateManyWithoutCreatedByNestedInput
+}
+
+export type MembershipUncheckedUpdateWithoutRecordedPaymentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  businessId?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  roles?: Prisma.MembershipRoleUncheckedUpdateManyWithoutMembershipNestedInput
+  assignedCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutAssignedToNestedInput
+  createdOrders?: Prisma.OrderUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type MembershipCreateManyUserInput = {
@@ -591,6 +869,9 @@ export type MembershipUpdateWithoutUserInput = {
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   business?: Prisma.BusinessUpdateOneRequiredWithoutMembersNestedInput
   roles?: Prisma.MembershipRoleUpdateManyWithoutMembershipNestedInput
+  assignedCustomers?: Prisma.CustomerUpdateManyWithoutAssignedToNestedInput
+  createdOrders?: Prisma.OrderUpdateManyWithoutCreatedByNestedInput
+  recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByNestedInput
 }
 
 export type MembershipUncheckedUpdateWithoutUserInput = {
@@ -599,6 +880,9 @@ export type MembershipUncheckedUpdateWithoutUserInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   roles?: Prisma.MembershipRoleUncheckedUpdateManyWithoutMembershipNestedInput
+  assignedCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutAssignedToNestedInput
+  createdOrders?: Prisma.OrderUncheckedUpdateManyWithoutCreatedByNestedInput
+  recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByNestedInput
 }
 
 export type MembershipUncheckedUpdateManyWithoutUserInput = {
@@ -621,6 +905,9 @@ export type MembershipUpdateWithoutBusinessInput = {
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutMembershipsNestedInput
   roles?: Prisma.MembershipRoleUpdateManyWithoutMembershipNestedInput
+  assignedCustomers?: Prisma.CustomerUpdateManyWithoutAssignedToNestedInput
+  createdOrders?: Prisma.OrderUpdateManyWithoutCreatedByNestedInput
+  recordedPayments?: Prisma.PaymentUpdateManyWithoutRecordedByNestedInput
 }
 
 export type MembershipUncheckedUpdateWithoutBusinessInput = {
@@ -629,6 +916,9 @@ export type MembershipUncheckedUpdateWithoutBusinessInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   roles?: Prisma.MembershipRoleUncheckedUpdateManyWithoutMembershipNestedInput
+  assignedCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutAssignedToNestedInput
+  createdOrders?: Prisma.OrderUncheckedUpdateManyWithoutCreatedByNestedInput
+  recordedPayments?: Prisma.PaymentUncheckedUpdateManyWithoutRecordedByNestedInput
 }
 
 export type MembershipUncheckedUpdateManyWithoutBusinessInput = {
@@ -645,10 +935,16 @@ export type MembershipUncheckedUpdateManyWithoutBusinessInput = {
 
 export type MembershipCountOutputType = {
   roles: number
+  assignedCustomers: number
+  createdOrders: number
+  recordedPayments: number
 }
 
 export type MembershipCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   roles?: boolean | MembershipCountOutputTypeCountRolesArgs
+  assignedCustomers?: boolean | MembershipCountOutputTypeCountAssignedCustomersArgs
+  createdOrders?: boolean | MembershipCountOutputTypeCountCreatedOrdersArgs
+  recordedPayments?: boolean | MembershipCountOutputTypeCountRecordedPaymentsArgs
 }
 
 /**
@@ -668,6 +964,27 @@ export type MembershipCountOutputTypeCountRolesArgs<ExtArgs extends runtime.Type
   where?: Prisma.MembershipRoleWhereInput
 }
 
+/**
+ * MembershipCountOutputType without action
+ */
+export type MembershipCountOutputTypeCountAssignedCustomersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CustomerWhereInput
+}
+
+/**
+ * MembershipCountOutputType without action
+ */
+export type MembershipCountOutputTypeCountCreatedOrdersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OrderWhereInput
+}
+
+/**
+ * MembershipCountOutputType without action
+ */
+export type MembershipCountOutputTypeCountRecordedPaymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PaymentWhereInput
+}
+
 
 export type MembershipSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -678,6 +995,9 @@ export type MembershipSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   business?: boolean | Prisma.BusinessDefaultArgs<ExtArgs>
   roles?: boolean | Prisma.Membership$rolesArgs<ExtArgs>
+  assignedCustomers?: boolean | Prisma.Membership$assignedCustomersArgs<ExtArgs>
+  createdOrders?: boolean | Prisma.Membership$createdOrdersArgs<ExtArgs>
+  recordedPayments?: boolean | Prisma.Membership$recordedPaymentsArgs<ExtArgs>
   _count?: boolean | Prisma.MembershipCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["membership"]>
 
@@ -714,6 +1034,9 @@ export type MembershipInclude<ExtArgs extends runtime.Types.Extensions.InternalA
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   business?: boolean | Prisma.BusinessDefaultArgs<ExtArgs>
   roles?: boolean | Prisma.Membership$rolesArgs<ExtArgs>
+  assignedCustomers?: boolean | Prisma.Membership$assignedCustomersArgs<ExtArgs>
+  createdOrders?: boolean | Prisma.Membership$createdOrdersArgs<ExtArgs>
+  recordedPayments?: boolean | Prisma.Membership$recordedPaymentsArgs<ExtArgs>
   _count?: boolean | Prisma.MembershipCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type MembershipIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -731,6 +1054,9 @@ export type $MembershipPayload<ExtArgs extends runtime.Types.Extensions.Internal
     user: Prisma.$UserPayload<ExtArgs>
     business: Prisma.$BusinessPayload<ExtArgs>
     roles: Prisma.$MembershipRolePayload<ExtArgs>[]
+    assignedCustomers: Prisma.$CustomerPayload<ExtArgs>[]
+    createdOrders: Prisma.$OrderPayload<ExtArgs>[]
+    recordedPayments: Prisma.$PaymentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1135,6 +1461,9 @@ export interface Prisma__MembershipClient<T, Null = never, ExtArgs extends runti
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   business<T extends Prisma.BusinessDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BusinessDefaultArgs<ExtArgs>>): Prisma.Prisma__BusinessClient<runtime.Types.Result.GetResult<Prisma.$BusinessPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   roles<T extends Prisma.Membership$rolesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Membership$rolesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MembershipRolePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  assignedCustomers<T extends Prisma.Membership$assignedCustomersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Membership$assignedCustomersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CustomerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  createdOrders<T extends Prisma.Membership$createdOrdersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Membership$createdOrdersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  recordedPayments<T extends Prisma.Membership$recordedPaymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Membership$recordedPaymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1591,6 +1920,78 @@ export type Membership$rolesArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.MembershipRoleScalarFieldEnum | Prisma.MembershipRoleScalarFieldEnum[]
+}
+
+/**
+ * Membership.assignedCustomers
+ */
+export type Membership$assignedCustomersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Customer
+   */
+  select?: Prisma.CustomerSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Customer
+   */
+  omit?: Prisma.CustomerOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CustomerInclude<ExtArgs> | null
+  where?: Prisma.CustomerWhereInput
+  orderBy?: Prisma.CustomerOrderByWithRelationInput | Prisma.CustomerOrderByWithRelationInput[]
+  cursor?: Prisma.CustomerWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CustomerScalarFieldEnum | Prisma.CustomerScalarFieldEnum[]
+}
+
+/**
+ * Membership.createdOrders
+ */
+export type Membership$createdOrdersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Order
+   */
+  select?: Prisma.OrderSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Order
+   */
+  omit?: Prisma.OrderOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrderInclude<ExtArgs> | null
+  where?: Prisma.OrderWhereInput
+  orderBy?: Prisma.OrderOrderByWithRelationInput | Prisma.OrderOrderByWithRelationInput[]
+  cursor?: Prisma.OrderWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OrderScalarFieldEnum | Prisma.OrderScalarFieldEnum[]
+}
+
+/**
+ * Membership.recordedPayments
+ */
+export type Membership$recordedPaymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Payment
+   */
+  select?: Prisma.PaymentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Payment
+   */
+  omit?: Prisma.PaymentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentInclude<ExtArgs> | null
+  where?: Prisma.PaymentWhereInput
+  orderBy?: Prisma.PaymentOrderByWithRelationInput | Prisma.PaymentOrderByWithRelationInput[]
+  cursor?: Prisma.PaymentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PaymentScalarFieldEnum | Prisma.PaymentScalarFieldEnum[]
 }
 
 /**

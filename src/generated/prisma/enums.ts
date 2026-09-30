@@ -9,7 +9,108 @@
 * 🟢 You can import this file directly.
 */
 
+export const CustomerSource = {
+  WEBSITE: 'WEBSITE',
+  FACEBOOK: 'FACEBOOK',
+  INSTAGRAM: 'INSTAGRAM',
+  WALK_IN: 'WALK_IN',
+  REFERRAL: 'REFERRAL',
+  OTHER: 'OTHER'
+} as const
+
+export type CustomerSource = (typeof CustomerSource)[keyof typeof CustomerSource]
 
 
-// This file is empty because there are no enums in the schema.
-export {}
+export const CustomerStatus = {
+  LEAD: 'LEAD',
+  ACTIVE: 'ACTIVE',
+  REPEAT: 'REPEAT',
+  INACTIVE: 'INACTIVE'
+} as const
+
+export type CustomerStatus = (typeof CustomerStatus)[keyof typeof CustomerStatus]
+
+
+export const ItemCondition = {
+  BRAND_NEW: 'BRAND_NEW',
+  LIKE_NEW: 'LIKE_NEW',
+  GOOD: 'GOOD',
+  FAIR: 'FAIR',
+  FOR_PARTS: 'FOR_PARTS'
+} as const
+
+export type ItemCondition = (typeof ItemCondition)[keyof typeof ItemCondition]
+
+
+export const ItemStatus = {
+  DRAFT: 'DRAFT',
+  AVAILABLE: 'AVAILABLE',
+  RESERVED: 'RESERVED',
+  SOLD: 'SOLD',
+  ARCHIVED: 'ARCHIVED'
+} as const
+
+export type ItemStatus = (typeof ItemStatus)[keyof typeof ItemStatus]
+
+
+export const OrderStatus = {
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus]
+
+
+export const OrderChannel = {
+  WALK_IN: 'WALK_IN',
+  FACEBOOK: 'FACEBOOK',
+  INSTAGRAM: 'INSTAGRAM',
+  WEBSITE: 'WEBSITE',
+  OTHER: 'OTHER'
+} as const
+
+export type OrderChannel = (typeof OrderChannel)[keyof typeof OrderChannel]
+
+
+export const PaymentStatus = {
+  UNPAID: 'UNPAID',
+  PARTIAL: 'PARTIAL',
+  PAID: 'PAID'
+} as const
+
+export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
+
+
+export const PaymentMethod = {
+  CASH: 'CASH',
+  GCASH: 'GCASH',
+  MAYA: 'MAYA',
+  BANK_TRANSFER: 'BANK_TRANSFER',
+  COD: 'COD',
+  CARD: 'CARD',
+  OTHER: 'OTHER'
+} as const
+
+export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod]
+
+
+export const FulfillmentType = {
+  PICKUP: 'PICKUP',
+  MEETUP: 'MEETUP',
+  DELIVERY: 'DELIVERY',
+  SHIPPING: 'SHIPPING'
+} as const
+
+export type FulfillmentType = (typeof FulfillmentType)[keyof typeof FulfillmentType]
+
+
+export const FulfillmentStatus = {
+  PENDING: 'PENDING',
+  READY: 'READY',
+  SHIPPED: 'SHIPPED',
+  DELIVERED: 'DELIVERED'
+} as const
+
+export type FulfillmentStatus = (typeof FulfillmentStatus)[keyof typeof FulfillmentStatus]
