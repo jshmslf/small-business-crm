@@ -95,3 +95,23 @@ export async function getItemFormOptions(businessId: string) {
     ]);
     return { sellers, categories: categoryRows.map((r) => r.category!) };
 }
+
+// assign a role if its below yours
+export function canAssignRole(
+    access: Access,
+    role: { position: number; isOwnerRole: boolean;  permissions: string[] }
+) {
+    if (!canManageRole(access, role)) return false;
+    return access.isOwner || role.permissions.every((p) => access.permissions.has(p));
+}
+
+// manage a member if they rank below you
+export function canManageMember(
+    access: Access,
+    target: { id: string; roles: { position: number;  isOwnerRole: boolean }[] }
+) {
+    if (target.id === access.membership.id) return false;
+    if (target.roles.some((r) => r.isOwnerRole)) return false;
+    const highest = target.roles.length ? Math.max(...target.roles.map((r) => r.position)) : -1;
+    return access.isOwner || highest < access.highestPosition;
+}

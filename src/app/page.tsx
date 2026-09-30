@@ -1,6 +1,7 @@
-import { prisma } from "../lib/prisma";
+import { redirect } from "next/navigation";
+import { getSession } from "../lib/session";
 
 export default async function Home() {
-    const count = await prisma.business.count();
-    return <p>Business in database: { count } </p>;
+    const session = await getSession();
+    redirect(session ? "/dashboard" : "/login");;
 }
