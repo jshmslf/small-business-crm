@@ -10,5 +10,6 @@ cloudinary.config({
 export { cloudinary };
 
 export function itemFolder(businessId: string, itemId: string) {
-    return `buy-n-sell/${businessId}/items/${itemId}`;
+    const root = process.env.CLOUDINARY_FOLDER ?? "buy-n-sell-dev";
+    return `${root}/${businessId}/items/${itemId}`;
 }
