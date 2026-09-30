@@ -5,6 +5,15 @@ import { can, requireBusinessAccess } from "@/src/lib/access";
 import { PERMISSIONS } from "@/src/lib/permissions";
 import { CUSTOMER_STATUSES, sourceLabel, statusInfo } from "@/src/lib/customer-options";
 import { prisma } from "@/src/lib/prisma";
+import { Plus, Users } from "lucide-react";
+import { Button } from "@/src/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/src/components/ui/native-select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/components/ui/table";
+import { PageHeader } from "@/src/components/page-header";
+import { StatusBadge } from "@/src/components/status-badge";
+import { EmptyState } from "@/src/components/empty-state";
+import { EmptyRow, EntityCell, TableCard } from "@/src/components/data-table";
+import { FilterBar, FilterChip, SearchInput, hrefWithout } from "@/src/components/filter-bar";
 
 
 export default async function CustomersPage({
@@ -43,76 +52,115 @@ export default async function CustomersPage({
 
   const base = `/b/${slug}/customers`;
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Customers</h1>
-          <p className="text-gray-500">{customers.length} shown</p>
-        </div>
-        {can(access, PERMISSIONS.CUSTOMERS_CREATE) && (
-          <Link href={`${base}/new`} className="rounded bg-black px-4 py-2 text-white">
-            + Add customer
-          </Link>
-        )}
-      </div>
+  const canCreate = can(access, PERMISSIONS.CUSTOMERS_CREATE);
+  const activeParams = { q, status };
 
-      <Form action={base} className="flex flex-wrap gap-2">
-        <input name="q" defaultValue={q} placeholder="Search name, phone, Facebook, email..."
-          className="min-w-64 flex-1 rounded border p-2" />
-        <select name="status" defaultValue={status} className="rounded border p-2">
-          <option value="">All statuses</option>
-          {CUSTOMER_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-        </select>
-        <button className="rounded border px-4 py-2">Search</button>
-        {(q || status) && <Link href={base} className="px-2 py-2 text-sm underline">Clear</Link>}
+  return (
+    <div>
+      <PageHeader
+        title="Customers"
+        description={`${customers.length} shown`}
+        actions={
+          canCreate && (
+            <Button asChild>
+              <Link href={`${base}/new`}>
+                <Plus aria-hidden />
+                Add customer
+              </Link>
+            </Button>
+          )
+        }
+      />
+
+      <Form action={base}>
+        <FilterBar
+          filters={
+            <NativeSelect name="status" defaultValue={status} aria-label="Status" wrapperClassName="w-full sm:w-48">
+              <NativeSelectOption value="">All statuses</NativeSelectOption>
+              {CUSTOMER_STATUSES.map((s) => <NativeSelectOption key={s.value} value={s.value}>{s.label}</NativeSelectOption>)}
+            </NativeSelect>
+          }
+          search={
+            <>
+              <SearchInput name="q" defaultValue={q} placeholder="Search name, phone, Facebook, email..."
+                aria-label="Search customers" />
+              <Button type="submit" variant="secondary">Search</Button>
+              {(q || status) && (
+                <Button asChild variant="link" size="sm">
+                  <Link href={base}>Clear</Link>
+                </Button>
+              )}
+            </>
+          }
+          chips={
+            (search || statusFilter) && (
+              <>
+                {search && <FilterChip href={hrefWithout(base, activeParams, "q")}>Search: &ldquo;{search}&rdquo;</FilterChip>}
+                {statusFilter && (
+                  <FilterChip href={hrefWithout(base, activeParams, "status")}>{statusInfo(statusFilter).label}</FilterChip>
+                )}
+              </>
+            )
+          }
+        />
       </Form>
 
-      <div className="overflow-x-auto rounded-lg border">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-gray-50 text-gray-600">
-            <tr>
-              <th className="p-3">Name</th>
-              <th className="p-3">Contact</th>
-              <th className="p-3">Status</th>
-              <th className="p-3">Source</th>
-              <th className="p-3">Handled by</th>
-              <th className="p-3">Added</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {customers.map((c) => {
-              const s = statusInfo(c.status);
-              return (
-                <tr key={c.id} className="hover:bg-gray-50">
-                  <td className="p-3">
-                    <Link href={`${base}/${c.id}`} className="font-medium hover:underline">
-                      {c.firstName} {c.lastName}
-                    </Link>
-                  </td>
-                  <td className="p-3 text-gray-600">
-                    {c.phone && <p>{c.phone}</p>}
-                    {c.facebookName && <p>FB: {c.facebookName}</p>}
-                  </td>
-                  <td className="p-3">
-                    <span className={`rounded-full px-2 py-0.5 text-xs ${s.badge}`}>{s.label}</span>
-                  </td>
-                  <td className="p-3 text-gray-600">{sourceLabel(c.source)}</td>
-                  <td className="p-3 text-gray-600">{c.assignedTo?.user.name ?? "—"}</td>
-                  <td className="p-3 text-gray-600">{c.createdAt.toLocaleDateString("en-PH")}</td>
-                </tr>
-              );
-            })}
+      <TableCard>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Contact</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Source</TableHead>
+              <TableHead>Handled by</TableHead>
+              <TableHead>Added</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {customers.map((c) => (
+              <TableRow key={c.id}>
+                <TableCell className="min-w-56">
+                  <EntityCell
+                    avatar={`${c.firstName} ${c.lastName ?? ""}`}
+                    name={<>{c.firstName} {c.lastName}</>}
+                    href={`${base}/${c.id}`}
+                    secondary={c.email}
+                  />
+                </TableCell>
+                <TableCell>
+                  {c.phone && <p className="text-gray-700">{c.phone}</p>}
+                  {c.facebookName && <p>FB: {c.facebookName}</p>}
+                </TableCell>
+                <TableCell>
+                  <StatusBadge kind="customer" value={c.status} />
+                </TableCell>
+                <TableCell>{sourceLabel(c.source)}</TableCell>
+                <TableCell>{c.assignedTo?.user.name ?? "—"}</TableCell>
+                <TableCell>{c.createdAt.toLocaleDateString("en-PH")}</TableCell>
+              </TableRow>
+            ))}
             {customers.length === 0 && (
-              <tr>
-                <td colSpan={6} className="p-6 text-center text-gray-500">
-                  {q || status ? "No customers match your search." : "No customers yet."}
-                </td>
-              </tr>
+              <EmptyRow colSpan={6}>
+                <EmptyState
+                  icon={Users}
+                  title={q || status ? "No customers match your search." : "No customers yet."}
+                  action={
+                    !(q || status) && canCreate && (
+                      <Button asChild>
+                        <Link href={`${base}/new`}>
+                          <Plus aria-hidden />
+                          Add customer
+                        </Link>
+                      </Button>
+                    )
+                  }
+                />
+              </EmptyRow>
             )}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </TableCard>
     </div>
   );
 }

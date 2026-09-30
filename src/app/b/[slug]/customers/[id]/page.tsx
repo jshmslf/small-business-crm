@@ -5,7 +5,11 @@ import { PERMISSIONS } from "@/src/lib/permissions";
 import { prisma } from "@/src/lib/prisma";
 import Link from "next/link";
 import { formatPeso } from "@/src/lib/money";
-import { optionBadge, optionLabel, ORDER_STATUSES } from "@/src/lib/order-options";
+import { ShoppingBag } from "lucide-react";
+import { PageHeader, SectionHeader } from "@/src/components/page-header";
+import { StatusBadge } from "@/src/components/status-badge";
+import { EmptyState } from "@/src/components/empty-state";
+import { Meta, TableCard } from "@/src/components/data-table";
 
 export default async function CustomerPage({ params }: { params: Promise<{ slug: string; id: string }> }) {
   const { slug, id } = await params;
@@ -48,46 +52,55 @@ export default async function CustomerPage({ params }: { params: Promise<{ slug:
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       <div>
-        <h1 className="text-2xl font-bold">{customer.firstName} {customer.lastName}</h1>
-        <p className="text-sm text-gray-500">
-          Added {customer.createdAt.toLocaleDateString("en-PH")} · Updated {customer.updatedAt.toLocaleDateString("en-PH")}
-        </p>
+        <PageHeader
+          title={<>{customer.firstName} {customer.lastName}</>}
+          description={
+            <Meta items={[
+              `Added ${customer.createdAt.toLocaleDateString("en-PH")}`,
+              `Updated ${customer.updatedAt.toLocaleDateString("en-PH")}`,
+            ]} />
+          }
+        />
+        <CustomerForm
+          slug={slug}
+          members={members}
+          customer={formValues}
+          canEdit={can(access, PERMISSIONS.CUSTOMERS_EDIT)}
+          canDelete={can(access, PERMISSIONS.CUSTOMERS_DELETE)}
+        />
       </div>
-      <CustomerForm
-        slug={slug}
-        members={members}
-        customer={formValues}
-        canEdit={can(access, PERMISSIONS.CUSTOMERS_EDIT)}
-        canDelete={can(access, PERMISSIONS.CUSTOMERS_DELETE)}
-      />
-            {canOrders && (
-        <section className="max-w-2xl space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold">Orders ({orders.length})</h2>
-            <p className="text-sm text-gray-500">Total spent: {formatPeso(totalSpent)}</p>
-          </div>
-          <div className="divide-y rounded-lg border">
-            {orders.map((o) => (
-              <Link key={o.id} href={`/b/${slug}/orders/${o.id}`}
-                className="flex items-center justify-between p-3 text-sm hover:bg-gray-50">
-                <div>
-                  <p className="font-medium">#{o.orderNumber}</p>
-                  <p className="text-xs text-gray-500">
-                    {o.createdAt.toLocaleDateString("en-PH")} · {o._count.items} item(s)
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>{formatPeso(o.total)}</span>
-                  <span className={`rounded-full px-2 py-0.5 text-xs ${optionBadge(ORDER_STATUSES, o.status)}`}>
-                    {optionLabel(ORDER_STATUSES, o.status)}
-                  </span>
-                </div>
-              </Link>
-            ))}
-            {orders.length === 0 && <p className="p-3 text-sm text-gray-500">No orders yet.</p>}
-          </div>
+      {canOrders && (
+        <section className="max-w-3xl">
+          <SectionHeader
+            title={`Orders (${orders.length})`}
+            description={<span className="tabular-nums">Total spent: {formatPeso(totalSpent)}</span>}
+          />
+          <TableCard>
+            {orders.length > 0 ? (
+              <ul className="divide-y divide-gray-200">
+                {orders.map((o) => (
+                  <li key={o.id}>
+                    <Link href={`/b/${slug}/orders/${o.id}`}
+                      className="flex flex-col gap-2 px-5 py-4 outline-none hover:bg-gray-50 focus-visible:bg-gray-50 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                      <div>
+                        <p className="font-medium text-gray-900">#{o.orderNumber}</p>
+                        <Meta className="text-sm text-gray-500"
+                          items={[o.createdAt.toLocaleDateString("en-PH"), `${o._count.items} item(s)`]} />
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="font-medium text-gray-900 tabular-nums">{formatPeso(o.total)}</span>
+                        <StatusBadge kind="order" value={o.status} />
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <EmptyState icon={ShoppingBag} title="No orders yet." />
+            )}
+          </TableCard>
         </section>
       )}
     </div>

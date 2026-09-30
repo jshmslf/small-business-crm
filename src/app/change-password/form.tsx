@@ -3,10 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { changePassword } from "./actions";
-import { authClient } from "@/src/lib/auth-client";
+import { Button } from "@/src/components/ui/button";
+import { Input } from "@/src/components/ui/input";
+import { Field, Notice } from "@/src/components/form-field";
+import { useSignOut } from "@/src/components/sign-out-button";
 
 export function ChangePasswordForm() {
   const router = useRouter();
+  const signOut = useSignOut();
   const [form, setForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,32 +28,38 @@ export function ChangePasswordForm() {
     router.refresh();
   }
 
-  const input = "w-full rounded border p-2";
-
   return (
-    <div className="space-y-3">
-      <input className={input} type="password" placeholder="Temporary password"
-        value={form.currentPassword}
-        onChange={(e) => setForm({ ...form, currentPassword: e.target.value })} />
-      <input className={input} type="password" placeholder="New password (min 8)"
-        value={form.newPassword}
-        onChange={(e) => setForm({ ...form, newPassword: e.target.value })} />
-      <input className={input} type="password" placeholder="Confirm new password"
-        value={form.confirmPassword}
-        onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} />
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      <button onClick={handleSubmit} disabled={loading}
-        className="w-full rounded bg-black p-2 text-white disabled:opacity-50">
+    <form
+      className="space-y-5"
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleSubmit();
+      }}
+    >
+      <Field label="Temporary password" htmlFor="currentPassword">
+        <Input id="currentPassword" type="password" placeholder="Temporary password" autoComplete="current-password"
+          value={form.currentPassword}
+          onChange={(e) => setForm({ ...form, currentPassword: e.target.value })} />
+      </Field>
+      <Field label="New password" htmlFor="newPassword">
+        <Input id="newPassword" type="password" placeholder="New password (min 8)" autoComplete="new-password"
+          value={form.newPassword}
+          onChange={(e) => setForm({ ...form, newPassword: e.target.value })} />
+      </Field>
+      <Field label="Confirm new password" htmlFor="confirmPassword">
+        <Input id="confirmPassword" type="password" placeholder="Confirm new password" autoComplete="new-password"
+          value={form.confirmPassword}
+          onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} />
+      </Field>
+      {error && <Notice tone="error">{error}</Notice>}
+      <Button type="submit" disabled={loading} className="w-full">
         {loading ? "Saving..." : "Set new password"}
-      </button>
-      <button
-        onClick={async () => {
-          await authClient.signOut();
-          router.push("/login");
-        }}
-        className="w-full text-sm text-gray-500 underline">
-        Log out
-      </button>
-    </div>
+      </Button>
+      <div className="text-center">
+        <Button type="button" variant="link" className="text-gray-500 hover:text-gray-700" onClick={signOut}>
+          Log out
+        </Button>
+      </div>
+    </form>
   );
 }

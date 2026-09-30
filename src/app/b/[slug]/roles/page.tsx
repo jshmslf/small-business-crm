@@ -27,14 +27,11 @@ export default async function RolesPage({ params }: { params: Promise<{ slug: st
   }));
 
   return (
-    <div className="max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Roles</h1>
-        <p className="text-gray-500">
-          Roles are listed from highest to lowest. You can only manage roles below your own.
-        </p>
-      </div>
-      <RolesManager slug={slug} roles={rows} grantable={[...access.permissions]} />
-    </div>
+    <RolesManager
+      slug={slug}
+      roles={rows}
+      grantable={[...access.permissions]}
+      description="Roles are listed from highest to lowest. You can only manage roles below your own."
+    />
   );
 }

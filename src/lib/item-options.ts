@@ -7,11 +7,11 @@ export const ITEM_CONDITIONS = [
 ] as const;
 
 export const ITEM_STATUSES = [
-    { value: "DRAFT", label: "Draft", badge: "bg-gray-100 text-gray-600" },
-    { value: "AVAILABLE", label: "Available", badge: "bg-green-100 text-green-800" },
-    { value: "RESERVED", label: "Reserved", badge: "bg-yellow-100 text-yellow-800" },
-    { value: "SOLD", label: "Sold", badge: "bg-blue-100 text-blue-800" },
-    { value: "ARCHIVED", label: "Archived", badge: "bg-gray-100 text-gray-400" },
+    { value: "DRAFT", label: "Draft" },
+    { value: "AVAILABLE", label: "Available" },
+    { value: "RESERVED", label: "Reserved" },
+    { value: "SOLD", label: "Sold" },
+    { value: "ARCHIVED", label: "Archived" },
 ] as const;
 
 export type ItemConditionValue = (typeof ITEM_CONDITIONS)[number]["value"];

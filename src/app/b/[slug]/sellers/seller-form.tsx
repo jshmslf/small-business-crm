@@ -3,6 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSeller, updateSeller, deleteSeller, type SellerInput } from "./actions";
+import { Button } from "@/src/components/ui/button";
+import { Card, CardContent, CardFooter } from "@/src/components/ui/card";
+import { Input } from "@/src/components/ui/input";
+import { Textarea } from "@/src/components/ui/textarea";
+import { Field, FormActions, FormSection, Notice } from "@/src/components/form-field";
+import { ConfirmDialog } from "@/src/components/confirm-dialog";
 
 const emptySeller: SellerInput = { name: "", phone: "", email: "", facebookName: "", address: "", notes: "" };
 
@@ -38,68 +44,74 @@ export function SellerForm({
     router.push(listUrl);
   }
 
+  const deleteWarning = seller
+    ? itemCount > 0
+      ? `Delete ${seller.name}? Their ${itemCount} item(s) will be kept but no longer linked to a seller.`
+      : `Delete ${seller.name}?`
+    : "";
+
   async function handleDelete() {
     if (!seller) return;
-    const warning = itemCount > 0
-      ? `Delete ${seller.name}? Their ${itemCount} item(s) will be kept but no longer linked to a seller.`
-      : `Delete ${seller.name}?`;
-    if (!confirm(warning)) return;
     const result = await deleteSeller(slug, seller.id);
     if (!result.ok) return setError(result.error);
     router.push(listUrl);
   }
 
-  const input = "w-full rounded border p-2 disabled:bg-gray-50";
-  const label = "mb-1 block text-sm font-medium";
-
   return (
-    <div className="max-w-2xl space-y-6">
-      <fieldset disabled={!canEdit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="sm:col-span-2">
-          <label className={label}>Name *</label>
-          <input className={input} value={form.name} onChange={(e) => update("name", e.target.value)} />
-        </div>
-        <div>
-          <label className={label}>Phone</label>
-          <input className={input} value={form.phone} onChange={(e) => update("phone", e.target.value)} />
-        </div>
-        <div>
-          <label className={label}>Facebook name</label>
-          <input className={input} value={form.facebookName} onChange={(e) => update("facebookName", e.target.value)} />
-        </div>
-        <div className="sm:col-span-2">
-          <label className={label}>Email</label>
-          <input className={input} type="email" value={form.email} onChange={(e) => update("email", e.target.value)} />
-        </div>
-        <div className="sm:col-span-2">
-          <label className={label}>Address</label>
-          <input className={input} value={form.address} onChange={(e) => update("address", e.target.value)} />
-        </div>
-        <div className="sm:col-span-2">
-          <label className={label}>Notes</label>
-          <textarea className={input} rows={3} placeholder="What they usually sell, reliability, pricing..."
-            value={form.notes} onChange={(e) => update("notes", e.target.value)} />
-        </div>
-      </fieldset>
+    <Card className="max-w-3xl">
+      <CardContent>
+        <fieldset disabled={!canEdit}>
+          <FormSection>
+            <Field label="Name" htmlFor="name" required className="sm:col-span-2">
+              <Input id="name" value={form.name} onChange={(e) => update("name", e.target.value)} />
+            </Field>
+            <Field label="Phone" htmlFor="phone">
+              <Input id="phone" value={form.phone} onChange={(e) => update("phone", e.target.value)} />
+            </Field>
+            <Field label="Facebook name" htmlFor="facebookName">
+              <Input id="facebookName" value={form.facebookName} onChange={(e) => update("facebookName", e.target.value)} />
+            </Field>
+            <Field label="Email" htmlFor="email" className="sm:col-span-2">
+              <Input id="email" type="email" value={form.email} onChange={(e) => update("email", e.target.value)} />
+            </Field>
+            <Field label="Address" htmlFor="address" className="sm:col-span-2">
+              <Input id="address" value={form.address} onChange={(e) => update("address", e.target.value)} />
+            </Field>
+            <Field label="Notes" htmlFor="notes" className="sm:col-span-2">
+              <Textarea id="notes" rows={3} placeholder="What they usually sell, reliability, pricing..."
+                value={form.notes} onChange={(e) => update("notes", e.target.value)} />
+            </Field>
+          </FormSection>
+        </fieldset>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <Notice tone="error" className="mt-6">{error}</Notice>}
+      </CardContent>
 
-      <div className="flex items-center gap-2">
-        {canEdit && (
-          <button onClick={handleSave} disabled={saving}
-            className="rounded bg-black px-4 py-2 text-white disabled:opacity-50">
-            {saving ? "Saving..." : seller ? "Save changes" : "Add seller"}
-          </button>
-        )}
-        <button onClick={() => router.push(listUrl)} className="rounded border px-4 py-2">
-          {canEdit ? "Cancel" : "Back"}
-        </button>
-        {canDelete && seller && (
-          <button onClick={handleDelete} className="ml-auto rounded border px-4 py-2 text-red-600">
-            Delete seller
-          </button>
-        )}
-      </div>
-    </div>
+      <CardFooter className="border-t border-gray-200">
+        <FormActions
+          destructive={
+            canDelete && seller && (
+              <ConfirmDialog
+                trigger={<Button variant="destructive">Delete seller</Button>}
+                title="Delete seller?"
+                description={deleteWarning}
+                confirmLabel="Delete"
+                destructive
+                onConfirm={handleDelete}
+              />
+            )
+          }
+        >
+          <Button variant="secondary" onClick={() => router.push(listUrl)}>
+            {canEdit ? "Cancel" : "Back"}
+          </Button>
+          {canEdit && (
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? "Saving..." : seller ? "Save changes" : "Add seller"}
+            </Button>
+          )}
+        </FormActions>
+      </CardFooter>
+    </Card>
   );
 }

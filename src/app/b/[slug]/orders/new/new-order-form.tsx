@@ -6,6 +6,18 @@ import { formatPeso, parsePeso, centavosToInput } from "@/src/lib/money";
 import { imageVariant } from "@/src/lib/image-url";
 import { ORDER_CHANNELS, FULFILLMENT_TYPES, PAYMENT_METHODS } from "@/src/lib/order-options";
 import { createOrder } from "../actions";
+import { ImageIcon, ShoppingBag, Trash2 } from "lucide-react";
+import { Button } from "@/src/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
+import { Input } from "@/src/components/ui/input";
+import { NativeSelect, NativeSelectOption } from "@/src/components/ui/native-select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/components/ui/table";
+import { Textarea } from "@/src/components/ui/textarea";
+import { Field, Notice } from "@/src/components/form-field";
+import { EmptyState } from "@/src/components/empty-state";
+import { EmptyRow, TableCard } from "@/src/components/data-table";
+import { SearchInput } from "@/src/components/filter-bar";
+import { IconButton } from "@/src/components/icon-button";
 
 type PickerItem = {
   id: string; name: string; sku: string | null; category: string | null;
@@ -85,169 +97,195 @@ export function NewOrderForm({ slug, customers, items }: {
     router.push(`/b/${slug}/orders/${result.id}`);
   }
 
-  const input = "w-full rounded border p-2";
-  const label = "mb-1 block text-sm font-medium";
-
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-8">
       {/* Left: items */}
-      <div className="space-y-4 lg:col-span-3">
+      <div className="min-w-0 space-y-4 lg:col-span-3">
         <div className="relative">
-          <input className={input} placeholder="Search items by name, SKU, or category..."
+          <SearchInput className="lg:w-full" aria-label="Search items" placeholder="Search items by name, SKU, or category..."
             value={search} onChange={(e) => setSearch(e.target.value)} />
           {results.length > 0 && (
-            <div className="absolute z-10 mt-1 w-full divide-y rounded-lg border bg-white shadow">
-              {results.map((item) => (
-                <button key={item.id} onClick={() => addItem(item)}
-                  className="flex w-full items-center gap-3 p-2 text-left hover:bg-gray-50">
-                  {item.imageUrl ? (
-                    <img src={imageVariant(item.imageUrl, 80)} alt="" className="h-10 w-10 rounded object-cover" />
-                  ) : <div className="h-10 w-10 rounded bg-gray-100" />}
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{item.name}</p>
-                    <p className="text-xs text-gray-500">{item.quantity} in stock</p>
-                  </div>
-                  <p className="text-sm">{formatPeso(item.sellingPrice)}</p>
-                </button>
-              ))}
+            <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+              <ul className="max-h-96 divide-y divide-gray-100 overflow-y-auto">
+                {results.map((item) => (
+                  <li key={item.id}>
+                    <button type="button" onClick={() => addItem(item)}
+                      className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left outline-none hover:bg-gray-50 focus-visible:bg-gray-50">
+                      {item.imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={imageVariant(item.imageUrl, 80)} alt=""
+                          className="size-10 shrink-0 rounded-lg border border-gray-200 object-cover" />
+                      ) : (
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-gray-400">
+                          <ImageIcon className="size-4" aria-hidden />
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-gray-900">{item.name}</p>
+                        <p className="text-sm text-gray-500">{item.quantity} in stock</p>
+                      </div>
+                      <p className="text-sm font-medium text-gray-900 tabular-nums">{formatPeso(item.sellingPrice)}</p>
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
           {search.trim() && results.length === 0 && (
-            <p className="mt-1 text-sm text-gray-500">No available items match.</p>
+            <p className="mt-2 text-sm text-gray-500">No available items match.</p>
           )}
         </div>
 
-        <div className="overflow-x-auto rounded-lg border">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-gray-50 text-gray-600">
-              <tr>
-                <th className="p-3">Item</th>
-                <th className="w-24 p-3">Qty</th>
-                <th className="w-32 p-3">Price (₱)</th>
-                <th className="p-3 text-right">Total</th>
-                <th className="p-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y">
+        <TableCard>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Item</TableHead>
+                <TableHead className="w-24">Qty</TableHead>
+                <TableHead className="w-36">Price (₱)</TableHead>
+                <TableHead className="text-right">Total</TableHead>
+                <TableHead className="w-12"><span className="sr-only">Remove</span></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {lines.map((line) => {
                 const item = itemById.get(line.itemId)!;
                 return (
-                  <tr key={line.itemId}>
-                    <td className="p-3">
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-xs text-gray-500">List price {formatPeso(item.sellingPrice)}</p>
-                    </td>
-                    <td className="p-3">
-                      <input type="number" min={1} max={item.quantity} className="w-full rounded border p-1"
+                  <TableRow key={line.itemId}>
+                    <TableCell className="min-w-48 whitespace-normal">
+                      <p className="font-medium text-gray-900">{item.name}</p>
+                      <p className="text-sm text-gray-500 tabular-nums">List price {formatPeso(item.sellingPrice)}</p>
+                    </TableCell>
+                    <TableCell>
+                      <Input type="number" min={1} max={item.quantity} className="h-9 w-20 tabular-nums"
+                        aria-label={`Quantity for ${item.name}`}
                         value={line.quantity}
                         onChange={(e) => {
                           const qty = Math.max(1, Math.min(item.quantity, Number(e.target.value) || 1));
                           updateLine(line.itemId, { quantity: qty });
                         }} />
-                    </td>
-                    <td className="p-3">
-                      <input inputMode="decimal" className="w-full rounded border p-1" value={line.unitPrice}
+                    </TableCell>
+                    <TableCell>
+                      <Input inputMode="decimal" className="h-9 w-32 tabular-nums" aria-label={`Price for ${item.name}`}
+                        value={line.unitPrice}
                         onChange={(e) => updateLine(line.itemId, { unitPrice: e.target.value })} />
-                    </td>
-                    <td className="p-3 text-right">{formatPeso(toCentavos(line.unitPrice) * line.quantity)}</td>
-                    <td className="p-3 text-right">
-                      <button className="text-red-600"
+                    </TableCell>
+                    <TableCell className="text-right font-medium text-gray-900 tabular-nums">
+                      {formatPeso(toCentavos(line.unitPrice) * line.quantity)}
+                    </TableCell>
+                    <TableCell className="pl-0 text-right">
+                      <IconButton label="Remove" className="hover:text-error-700"
                         onClick={() => setLines((prev) => prev.filter((l) => l.itemId !== line.itemId))}>
-                        Remove
-                      </button>
-                    </td>
-                  </tr>
+                        <Trash2 />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
                 );
               })}
               {lines.length === 0 && (
-                <tr><td colSpan={5} className="p-6 text-center text-gray-500">Search above to add items.</td></tr>
+                <EmptyRow colSpan={5}>
+                  <EmptyState icon={ShoppingBag} title="Search above to add items." className="py-10" />
+                </EmptyRow>
               )}
-            </tbody>
-          </table>
-        </div>
-        <p className="text-xs text-gray-500">
+            </TableBody>
+          </Table>
+        </TableCard>
+        <p className="text-sm text-gray-500">
           You can change the price per item for haggled deals. The list price stays the same in inventory.
         </p>
       </div>
 
       {/* Right: details and summary */}
-      <div className="space-y-4 lg:col-span-2">
-        <div>
-          <label className={label}>Customer</label>
-          <select className={input} value={customerId} onChange={(e) => chooseCustomer(e.target.value)}>
-            <option value="">Walk-in / no customer record</option>
-            {customers.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}{c.phone ? ` · ${c.phone}` : ""}</option>
-            ))}
-          </select>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className={label}>Channel</label>
-            <select className={input} value={channel} onChange={(e) => setChannel(e.target.value)}>
-              {ORDER_CHANNELS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className={label}>Fulfillment</label>
-            <select className={input} value={fulfillmentType} onChange={(e) => setFulfillmentType(e.target.value)}>
-              {FULFILLMENT_TYPES.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-          </div>
-        </div>
-        {needsAddress && (
-          <div>
-            <label className={label}>Delivery address</label>
-            <input className={input} value={deliveryAddress} onChange={(e) => setDeliveryAddress(e.target.value)} />
-          </div>
-        )}
-        <div>
-          <label className={label}>Notes</label>
-          <textarea className={input} rows={2} placeholder="Meetup place, special requests..."
-            value={notes} onChange={(e) => setNotes(e.target.value)} />
-        </div>
+      <div className="space-y-6 lg:col-span-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Order details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <Field label="Customer" htmlFor="customerId">
+              <NativeSelect id="customerId" value={customerId} onChange={(e) => chooseCustomer(e.target.value)}>
+                <NativeSelectOption value="">Walk-in / no customer record</NativeSelectOption>
+                {customers.map((c) => (
+                  <NativeSelectOption key={c.id} value={c.id}>{c.name}{c.phone ? ` · ${c.phone}` : ""}</NativeSelectOption>
+                ))}
+              </NativeSelect>
+            </Field>
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <Field label="Channel" htmlFor="channel">
+                <NativeSelect id="channel" value={channel} onChange={(e) => setChannel(e.target.value)}>
+                  {ORDER_CHANNELS.map((o) => <NativeSelectOption key={o.value} value={o.value}>{o.label}</NativeSelectOption>)}
+                </NativeSelect>
+              </Field>
+              <Field label="Fulfillment" htmlFor="fulfillmentType">
+                <NativeSelect id="fulfillmentType" value={fulfillmentType} onChange={(e) => setFulfillmentType(e.target.value)}>
+                  {FULFILLMENT_TYPES.map((o) => <NativeSelectOption key={o.value} value={o.value}>{o.label}</NativeSelectOption>)}
+                </NativeSelect>
+              </Field>
+            </div>
+            {needsAddress && (
+              <Field label="Delivery address" htmlFor="deliveryAddress">
+                <Input id="deliveryAddress" value={deliveryAddress} onChange={(e) => setDeliveryAddress(e.target.value)} />
+              </Field>
+            )}
+            <Field label="Notes" htmlFor="notes">
+              <Textarea id="notes" rows={2} placeholder="Meetup place, special requests..."
+                value={notes} onChange={(e) => setNotes(e.target.value)} />
+            </Field>
+          </CardContent>
+        </Card>
 
-        <div className="space-y-2 rounded-lg border p-4 text-sm">
-          <div className="flex justify-between"><span>Subtotal</span><span>{formatPeso(subtotal)}</span></div>
-          <div className="flex items-center justify-between gap-2">
-            <span>Discount (₱)</span>
-            <input inputMode="decimal" className="w-28 rounded border p-1 text-right" placeholder="0.00"
-              value={discount} onChange={(e) => setDiscount(e.target.value)} />
-          </div>
-          <div className="flex items-center justify-between gap-2">
-            <span>Shipping fee (₱)</span>
-            <input inputMode="decimal" className="w-28 rounded border p-1 text-right" placeholder="0.00"
-              value={shippingFee} onChange={(e) => setShippingFee(e.target.value)} />
-          </div>
-          <div className="flex justify-between border-t pt-2 text-base font-bold">
+        <Card className="gap-0 py-0 sm:py-0">
+          <dl className="space-y-3 px-5 py-5 text-sm tabular-nums sm:px-6">
+            <div className="flex justify-between text-gray-600">
+              <dt>Subtotal</dt><dd>{formatPeso(subtotal)}</dd>
+            </div>
+            <div className="flex items-center justify-between gap-2 text-gray-600">
+              <dt><label htmlFor="discount">Discount (₱)</label></dt>
+              <dd>
+                <Input id="discount" inputMode="decimal" className="h-9 w-28 text-right" placeholder="0.00"
+                  value={discount} onChange={(e) => setDiscount(e.target.value)} />
+              </dd>
+            </div>
+            <div className="flex items-center justify-between gap-2 text-gray-600">
+              <dt><label htmlFor="shippingFee">Shipping fee (₱)</label></dt>
+              <dd>
+                <Input id="shippingFee" inputMode="decimal" className="h-9 w-28 text-right" placeholder="0.00"
+                  value={shippingFee} onChange={(e) => setShippingFee(e.target.value)} />
+              </dd>
+            </div>
+          </dl>
+          <div className="flex justify-between border-t border-gray-200 px-5 py-4 text-base font-semibold text-gray-900 tabular-nums sm:px-6">
             <span>Total</span><span>{formatPeso(total)}</span>
           </div>
-        </div>
+        </Card>
 
-        <div className="space-y-2 rounded-lg border p-4">
-          <p className="text-sm font-semibold">Payment received now (optional)</p>
-          <div className="grid grid-cols-2 gap-2">
-            <input inputMode="decimal" className={input} placeholder="Amount (₱)" value={payment.amount}
-              onChange={(e) => setPayment({ ...payment, amount: e.target.value })} />
-            <select className={input} value={payment.method}
-              onChange={(e) => setPayment({ ...payment, method: e.target.value })}>
-              {PAYMENT_METHODS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
-            </select>
-          </div>
-          <input className={input} placeholder="Reference no. (e.g. GCash ref)" value={payment.reference}
-            onChange={(e) => setPayment({ ...payment, reference: e.target.value })} />
-          <button className="text-xs underline"
-            onClick={() => setPayment({ ...payment, amount: centavosToInput(Math.max(total, 0)) })}>
-            Paid in full
-          </button>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Payment received now (optional)</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <Input inputMode="decimal" aria-label="Amount" placeholder="Amount (₱)" value={payment.amount}
+                onChange={(e) => setPayment({ ...payment, amount: e.target.value })} />
+              <NativeSelect aria-label="Payment method" value={payment.method}
+                onChange={(e) => setPayment({ ...payment, method: e.target.value })}>
+                {PAYMENT_METHODS.map((m) => <NativeSelectOption key={m.value} value={m.value}>{m.label}</NativeSelectOption>)}
+              </NativeSelect>
+            </div>
+            <Input aria-label="Reference number" placeholder="Reference no. (e.g. GCash ref)" value={payment.reference}
+              onChange={(e) => setPayment({ ...payment, reference: e.target.value })} />
+            <Button type="button" variant="link" size="xs"
+              onClick={() => setPayment({ ...payment, amount: centavosToInput(Math.max(total, 0)) })}>
+              Paid in full
+            </Button>
+          </CardContent>
+        </Card>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <Notice tone="error">{error}</Notice>}
 
-        <button onClick={handleSave} disabled={saving || lines.length === 0}
-          className="w-full rounded bg-black p-3 text-white disabled:opacity-50">
+        <Button size="lg" onClick={handleSave} disabled={saving || lines.length === 0} className="w-full">
           {saving ? "Saving..." : `Create order · ${formatPeso(total)}`}
-        </button>
+        </Button>
       </div>
     </div>
   );

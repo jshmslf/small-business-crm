@@ -5,6 +5,13 @@ import { useRouter } from "next/navigation";
 import { ITEM_CONDITIONS, ITEM_STATUSES } from "@/src/lib/item-options";
 import { formatPeso, parsePeso } from "@/src/lib/money";
 import { createItem, updateItem, deleteItem, type ItemInput } from "./actions";
+import { Button } from "@/src/components/ui/button";
+import { Card, CardContent, CardFooter } from "@/src/components/ui/card";
+import { Input } from "@/src/components/ui/input";
+import { NativeSelect, NativeSelectOption } from "@/src/components/ui/native-select";
+import { Textarea } from "@/src/components/ui/textarea";
+import { Field, FormActions, FormSection, Notice } from "@/src/components/form-field";
+import { ConfirmDialog } from "@/src/components/confirm-dialog";
 
 const emptyItem: ItemInput = {
   name: "", description: "", category: "", sku: "", condition: "GOOD", status: "AVAILABLE",
@@ -55,118 +62,115 @@ export function ItemForm({
   }
 
   async function handleDelete() {
-    if (!item || !confirm(`Delete "${item.name}"? This can't be undone.`)) return;
+    if (!item) return;
     const result = await deleteItem(slug, item.id);
     if (!result.ok) return setError(result.error);
     router.push(listUrl);
   }
 
-  const input = "w-full rounded border p-2 disabled:bg-gray-50";
-  const label = "mb-1 block text-sm font-medium";
-
   return (
-    <div className="max-w-2xl space-y-6">
-      <fieldset disabled={!canEdit} className="space-y-6">
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="sm:col-span-2">
-            <label className={label}>Item name *</label>
-            <input className={input} placeholder="e.g. iPhone 13 128GB Blue" value={form.name}
-              onChange={(e) => update("name", e.target.value)} />
-          </div>
-          <div>
-            <label className={label}>Category</label>
-            <input className={input} list="categories" placeholder="e.g. Phones" value={form.category}
-              onChange={(e) => update("category", e.target.value)} />
-            <datalist id="categories">
-              {categories.map((c) => <option key={c} value={c} />)}
-            </datalist>
-          </div>
-          <div>
-            <label className={label}>SKU / Code</label>
-            <input className={input} placeholder="Optional" value={form.sku}
-              onChange={(e) => update("sku", e.target.value)} />
-          </div>
-          <div className="sm:col-span-2">
-            <label className={label}>Description</label>
-            <textarea className={input} rows={3} placeholder="Specs, inclusions, flaws..."
-              value={form.description} onChange={(e) => update("description", e.target.value)} />
-          </div>
-        </section>
+    <Card className="max-w-3xl">
+      <CardContent>
+        <fieldset disabled={!canEdit} className="space-y-6">
+          <FormSection title="Details">
+            <Field label="Item name" htmlFor="name" required className="sm:col-span-2">
+              <Input id="name" placeholder="e.g. iPhone 13 128GB Blue" value={form.name}
+                onChange={(e) => update("name", e.target.value)} />
+            </Field>
+            <Field label="Category" htmlFor="category">
+              <Input id="category" list="categories" placeholder="e.g. Phones" value={form.category}
+                onChange={(e) => update("category", e.target.value)} />
+              <datalist id="categories">
+                {categories.map((c) => <option key={c} value={c} />)}
+              </datalist>
+            </Field>
+            <Field label="SKU / Code" htmlFor="sku">
+              <Input id="sku" placeholder="Optional" value={form.sku}
+                onChange={(e) => update("sku", e.target.value)} />
+            </Field>
+            <Field label="Description" htmlFor="description" className="sm:col-span-2">
+              <Textarea id="description" rows={3} placeholder="Specs, inclusions, flaws..."
+                value={form.description} onChange={(e) => update("description", e.target.value)} />
+            </Field>
+          </FormSection>
 
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div>
-            <label className={label}>Condition</label>
-            <select className={input} value={form.condition} onChange={(e) => update("condition", e.target.value)}>
-              {ITEM_CONDITIONS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className={label}>Status</label>
-            <select className={input} value={form.status} onChange={(e) => update("status", e.target.value)}>
-              {ITEM_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className={label}>Quantity</label>
-            <input className={input} inputMode="numeric" value={form.quantity}
-              onChange={(e) => update("quantity", e.target.value)} />
-          </div>
-        </section>
+          <FormSection title="Condition and stock" columns={3}>
+            <Field label="Condition" htmlFor="condition">
+              <NativeSelect id="condition" value={form.condition} onChange={(e) => update("condition", e.target.value)}>
+                {ITEM_CONDITIONS.map((c) => <NativeSelectOption key={c.value} value={c.value}>{c.label}</NativeSelectOption>)}
+              </NativeSelect>
+            </Field>
+            <Field label="Status" htmlFor="status">
+              <NativeSelect id="status" value={form.status} onChange={(e) => update("status", e.target.value)}>
+                {ITEM_STATUSES.map((s) => <NativeSelectOption key={s.value} value={s.value}>{s.label}</NativeSelectOption>)}
+              </NativeSelect>
+            </Field>
+            <Field label="Quantity" htmlFor="quantity">
+              <Input id="quantity" inputMode="numeric" value={form.quantity}
+                onChange={(e) => update("quantity", e.target.value)} />
+            </Field>
+          </FormSection>
 
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label className={label}>Selling price (₱) *</label>
-            <input className={input} inputMode="decimal" placeholder="0.00" value={form.sellingPrice}
-              onChange={(e) => update("sellingPrice", e.target.value)} />
-          </div>
-          {canViewCost && (
-            <div>
-              <label className={label}>Buying price (₱)</label>
-              <input className={input} inputMode="decimal" placeholder="0.00" value={form.costPrice}
-                onChange={(e) => update("costPrice", e.target.value)} />
-            </div>
+          <FormSection title="Pricing">
+            <Field label="Selling price (₱)" htmlFor="sellingPrice" required>
+              <Input id="sellingPrice" inputMode="decimal" placeholder="0.00" value={form.sellingPrice}
+                onChange={(e) => update("sellingPrice", e.target.value)} />
+            </Field>
+            {canViewCost && (
+              <Field label="Buying price (₱)" htmlFor="costPrice">
+                <Input id="costPrice" inputMode="decimal" placeholder="0.00" value={form.costPrice}
+                  onChange={(e) => update("costPrice", e.target.value)} />
+              </Field>
+            )}
+            {canViewCost && profit !== null && (
+              <p className={`text-sm font-medium tabular-nums sm:col-span-2 ${profit >= 0 ? "text-success-700" : "text-error-700"}`}>
+                Profit per unit: {formatPeso(profit)}{margin !== null && ` (${margin}% margin)`}
+              </p>
+            )}
+          </FormSection>
+
+          <FormSection title="Source">
+            <Field label="Seller" htmlFor="sellerId">
+              <NativeSelect id="sellerId" value={form.sellerId} onChange={(e) => update("sellerId", e.target.value)}>
+                <NativeSelectOption value="">No seller / unknown</NativeSelectOption>
+                {sellers.map((s) => <NativeSelectOption key={s.id} value={s.id}>{s.name}</NativeSelectOption>)}
+              </NativeSelect>
+            </Field>
+            <Field label="Date acquired" htmlFor="acquiredAt">
+              <Input id="acquiredAt" type="date" value={form.acquiredAt}
+                onChange={(e) => update("acquiredAt", e.target.value)} />
+            </Field>
+          </FormSection>
+        </fieldset>
+
+        {error && <Notice tone="error" className="mt-6">{error}</Notice>}
+      </CardContent>
+
+      <CardFooter className="border-t border-gray-200">
+        <FormActions
+          destructive={
+            canDelete && item && (
+              <ConfirmDialog
+                trigger={<Button variant="destructive">Delete item</Button>}
+                title="Delete item?"
+                description={`Delete "${item.name}"? This can't be undone.`}
+                confirmLabel="Delete"
+                destructive
+                onConfirm={handleDelete}
+              />
+            )
+          }
+        >
+          <Button variant="secondary" onClick={() => router.push(listUrl)}>
+            {canEdit ? "Cancel" : "Back"}
+          </Button>
+          {canEdit && (
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? "Saving..." : item ? "Save changes" : "Add item"}
+            </Button>
           )}
-          {canViewCost && profit !== null && (
-            <p className={`text-sm sm:col-span-2 ${profit >= 0 ? "text-green-700" : "text-red-600"}`}>
-              Profit per unit: {formatPeso(profit)}{margin !== null && ` (${margin}% margin)`}
-            </p>
-          )}
-        </section>
-
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label className={label}>Seller</label>
-            <select className={input} value={form.sellerId} onChange={(e) => update("sellerId", e.target.value)}>
-              <option value="">No seller / unknown</option>
-              {sellers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className={label}>Date acquired</label>
-            <input className={input} type="date" value={form.acquiredAt}
-              onChange={(e) => update("acquiredAt", e.target.value)} />
-          </div>
-        </section>
-      </fieldset>
-
-      {error && <p className="text-sm text-red-600">{error}</p>}
-
-      <div className="flex items-center gap-2">
-        {canEdit && (
-          <button onClick={handleSave} disabled={saving}
-            className="rounded bg-black px-4 py-2 text-white disabled:opacity-50">
-            {saving ? "Saving..." : item ? "Save changes" : "Add item"}
-          </button>
-        )}
-        <button onClick={() => router.push(listUrl)} className="rounded border px-4 py-2">
-          {canEdit ? "Cancel" : "Back"}
-        </button>
-        {canDelete && item && (
-          <button onClick={handleDelete} className="ml-auto rounded border px-4 py-2 text-red-600">
-            Delete item
-          </button>
-        )}
-      </div>
-    </div>
+        </FormActions>
+      </CardFooter>
+    </Card>
   );
 }

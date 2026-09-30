@@ -1,3 +1,4 @@
+import { PageHeader } from "@/src/components/page-header";
 import { notFound } from "next/navigation";
 import { CustomerForm } from "../customer-form";
 import { PERMISSIONS } from "@/src/lib/permissions";
@@ -11,8 +12,8 @@ export default async function NewCustomerPage({ params }: { params: Promise<{ sl
   const members = await getActiveMembers(access.business.id);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Add customer</h1>
+    <div>
+      <PageHeader title="Add customer" />
       <CustomerForm slug={slug} members={members} />
     </div>
   );

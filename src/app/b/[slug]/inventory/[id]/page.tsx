@@ -5,6 +5,8 @@ import { PERMISSIONS } from "@/src/lib/permissions";
 import { centavosToInput } from "@/src/lib/money";
 import { ItemForm } from "../item-form";
 import { ItemPhotos } from "./item-photos";
+import { PageHeader } from "@/src/components/page-header";
+import { Meta } from "@/src/components/data-table";
 
 export default async function ItemPage({ params }: { params: Promise<{ slug: string; id: string }> }) {
   const { slug, id } = await params;
@@ -38,13 +40,16 @@ export default async function ItemPage({ params }: { params: Promise<{ slug: str
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{item.name}</h1>
-        <p className="text-sm text-gray-500">
-          Added {item.createdAt.toLocaleDateString("en-PH")}
-          {item.soldAt && ` · Sold ${item.soldAt.toLocaleDateString("en-PH")}`}
-        </p>
-      </div>
+      <PageHeader
+        className="mb-2"
+        title={item.name}
+        description={
+          <Meta items={[
+            `Added ${item.createdAt.toLocaleDateString("en-PH")}`,
+            item.soldAt && `Sold ${item.soldAt.toLocaleDateString("en-PH")}`,
+          ]} />
+        }
+      />
       <ItemPhotos
         slug={slug}
         itemId={item.id}

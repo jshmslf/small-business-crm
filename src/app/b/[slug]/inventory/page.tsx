@@ -1,6 +1,16 @@
 import Link from "next/link";
 import Form from "next/form";
 import { notFound } from "next/navigation";
+import { Package, Plus } from "lucide-react";
+import { Button } from "@/src/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/src/components/ui/native-select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/components/ui/table";
+import { PageHeader } from "@/src/components/page-header";
+import { StatCard } from "@/src/components/stat-card";
+import { StatusBadge } from "@/src/components/status-badge";
+import { EmptyState } from "@/src/components/empty-state";
+import { EmptyRow, EntityCell, Meta, TableCard, TableFooterCount } from "@/src/components/data-table";
+import { FilterBar, FilterChip, SearchInput, hrefWithout } from "@/src/components/filter-bar";
 import { prisma } from "@/src/lib/prisma";
 import { requireBusinessAccess, can } from "@/src/lib/access";
 import { PERMISSIONS } from "@/src/lib/permissions";
@@ -59,102 +69,136 @@ export default async function InventoryPage({
   const countOf = (value: string) => statusCounts.find((s) => s.status === value)?._count._all ?? 0;
   const base = `/b/${slug}/inventory`;
 
+  const canCreate = can(access, PERMISSIONS.INVENTORY_CREATE);
+  const activeParams = { q, status, category };
+  const filtered = Boolean(q || status || category);
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Inventory</h1>
-        {can(access, PERMISSIONS.INVENTORY_CREATE) && (
-          <Link href={`${base}/new`} className="rounded bg-black px-4 py-2 text-white">+ Add item</Link>
-        )}
+    <div>
+      <PageHeader
+        title="Inventory"
+        actions={
+          canCreate && (
+            <Button asChild>
+              <Link href={`${base}/new`}>
+                <Plus aria-hidden />
+                Add item
+              </Link>
+            </Button>
+          )
+        }
+      />
+
+      <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:gap-6">
+        {["AVAILABLE", "RESERVED", "SOLD", "DRAFT"].map((value) => (
+          <StatCard key={value} label={itemStatusInfo(value).label} value={countOf(value)} href={`${base}?status=${value}`} />
+        ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {["AVAILABLE", "RESERVED", "SOLD", "DRAFT"].map((value) => {
-          const info = itemStatusInfo(value);
-          return (
-            <Link key={value} href={`${base}?status=${value}`} className="rounded-lg border p-4 hover:bg-gray-50">
-              <p className="text-sm text-gray-500">{info.label}</p>
-              <p className="text-2xl font-bold">{countOf(value)}</p>
-            </Link>
-          );
-        })}
-      </div>
-
-      <Form action={base} className="flex flex-wrap gap-2">
-        <input name="q" defaultValue={q} placeholder="Search name, SKU, description..."
-          className="min-w-64 flex-1 rounded border p-2" />
-        <select name="status" defaultValue={status} className="rounded border p-2">
-          <option value="">All (except archived)</option>
-          {ITEM_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-        </select>
-        <select name="category" defaultValue={category} className="rounded border p-2">
-          <option value="">All categories</option>
-          {categoryRows.map((r) => <option key={r.category} value={r.category!}>{r.category}</option>)}
-        </select>
-        <button className="rounded border px-4 py-2">Search</button>
-        {(q || status || category) && <Link href={base} className="px-2 py-2 text-sm underline">Clear</Link>}
+      <Form action={base}>
+        <FilterBar
+          filters={
+            <>
+              <NativeSelect name="status" defaultValue={status} aria-label="Status" wrapperClassName="w-full sm:w-52">
+                <NativeSelectOption value="">All (except archived)</NativeSelectOption>
+                {ITEM_STATUSES.map((s) => <NativeSelectOption key={s.value} value={s.value}>{s.label}</NativeSelectOption>)}
+              </NativeSelect>
+              <NativeSelect name="category" defaultValue={category} aria-label="Category" wrapperClassName="w-full sm:w-48">
+                <NativeSelectOption value="">All categories</NativeSelectOption>
+                {categoryRows.map((r) => <NativeSelectOption key={r.category} value={r.category!}>{r.category}</NativeSelectOption>)}
+              </NativeSelect>
+            </>
+          }
+          search={
+            <>
+              <SearchInput name="q" defaultValue={q} placeholder="Search name, SKU, description..."
+                aria-label="Search items" />
+              <Button type="submit" variant="secondary">Search</Button>
+              {filtered && (
+                <Button asChild variant="link" size="sm">
+                  <Link href={base}>Clear</Link>
+                </Button>
+              )}
+            </>
+          }
+          chips={
+            (search || statusFilter || category) && (
+              <>
+                {search && <FilterChip href={hrefWithout(base, activeParams, "q")}>Search: &ldquo;{search}&rdquo;</FilterChip>}
+                {statusFilter && (
+                  <FilterChip href={hrefWithout(base, activeParams, "status")}>{itemStatusInfo(statusFilter).label}</FilterChip>
+                )}
+                {category && <FilterChip href={hrefWithout(base, activeParams, "category")}>{category}</FilterChip>}
+              </>
+            )
+          }
+        />
       </Form>
 
-      <div className="overflow-x-auto rounded-lg border">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-gray-50 text-gray-600">
-            <tr>
-              <th className="p-3">Item</th>
-              <th className="p-3">Condition</th>
-              <th className="p-3">Status</th>
-              <th className="p-3 text-right">Qty</th>
-              <th className="p-3 text-right">Price</th>
-              {canViewCost && <th className="p-3 text-right">Cost</th>}
-              {canViewCost && <th className="p-3 text-right">Profit</th>}
-              <th className="p-3">Seller</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
+      <TableCard footer={<TableFooterCount count={items.length} noun={["item", "items"]} />}>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Item</TableHead>
+              <TableHead>Condition</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Qty</TableHead>
+              <TableHead className="text-right">Price</TableHead>
+              {canViewCost && <TableHead className="text-right">Cost</TableHead>}
+              {canViewCost && <TableHead className="text-right">Profit</TableHead>}
+              <TableHead>Seller</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {items.map((item) => {
-              const s = itemStatusInfo(item.status);
               const profit = item.costPrice !== null ? item.sellingPrice - item.costPrice : null;
               return (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="p-3">
-                    <div className="flex items-center gap-3">
-                      {item.images[0] ? (
-                        <img src={imageVariant(item.images[0].url, 80)} alt=""
-                          className="h-10 w-10 shrink-0 rounded object-cover" />
-                      ) : (
-                          <div className="h-10 w-10 shrink-0 rounded bg-gray-100"/>
-                      )}
-                    </div>
-                    <Link href={`${base}/${item.id}`} className="font-medium hover:underline">{item.name}</Link>
-                    <p className="text-xs text-gray-500">
-                      {[item.category, item.sku].filter(Boolean).join(" · ")}
-                    </p>
-                  </td>
-                  <td className="p-3 text-gray-600">{conditionLabel(item.condition)}</td>
-                  <td className="p-3">
-                    <span className={`rounded-full px-2 py-0.5 text-xs ${s.badge}`}>{s.label}</span>
-                  </td>
-                  <td className="p-3 text-right">{item.quantity}</td>
-                  <td className="p-3 text-right">{formatPeso(item.sellingPrice)}</td>
-                  {canViewCost && <td className="p-3 text-right text-gray-600">{formatPeso(item.costPrice)}</td>}
+                <TableRow key={item.id}>
+                  <TableCell className="min-w-64">
+                    <EntityCell
+                      image={item.images[0] ? imageVariant(item.images[0].url, 80) : null}
+                      name={item.name}
+                      href={`${base}/${item.id}`}
+                      secondary={<Meta items={[item.category, item.sku]} />}
+                    />
+                  </TableCell>
+                  <TableCell>{conditionLabel(item.condition)}</TableCell>
+                  <TableCell>
+                    <StatusBadge kind="item" value={item.status} />
+                  </TableCell>
+                  <TableCell className="text-right text-gray-700 tabular-nums">{item.quantity}</TableCell>
+                  <TableCell className="text-right font-medium text-gray-900 tabular-nums">{formatPeso(item.sellingPrice)}</TableCell>
+                  {canViewCost && <TableCell className="text-right tabular-nums">{formatPeso(item.costPrice)}</TableCell>}
                   {canViewCost && (
-                    <td className={`p-3 text-right ${profit !== null && profit < 0 ? "text-red-600" : "text-green-700"}`}>
+                    <TableCell className={`text-right font-medium tabular-nums ${profit !== null && profit < 0 ? "text-error-700" : "text-success-700"}`}>
                       {formatPeso(profit)}
-                    </td>
+                    </TableCell>
                   )}
-                  <td className="p-3 text-gray-600">{item.seller?.name ?? "—"}</td>
-                </tr>
+                  <TableCell>{item.seller?.name ?? "—"}</TableCell>
+                </TableRow>
               );
             })}
             {items.length === 0 && (
-              <tr>
-                <td colSpan={canViewCost ? 8 : 6} className="p-6 text-center text-gray-500">
-                  {q || status || category ? "No items match your filters." : "No items yet."}
-                </td>
-              </tr>
+              <EmptyRow colSpan={canViewCost ? 8 : 6}>
+                <EmptyState
+                  icon={Package}
+                  title={filtered ? "No items match your filters." : "No items yet."}
+                  action={
+                    !filtered && canCreate && (
+                      <Button asChild>
+                        <Link href={`${base}/new`}>
+                          <Plus aria-hidden />
+                          Add item
+                        </Link>
+                      </Button>
+                    )
+                  }
+                />
+              </EmptyRow>
             )}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </TableCard>
     </div>
   );
 }

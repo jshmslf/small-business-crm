@@ -1,16 +1,16 @@
-type Option = { value: string; label: string; badge?: string };
+type Option = { value: string; label: string };
 
 export const ORDER_STATUSES = [
-  { value: "PENDING", label: "Pending", badge: "bg-yellow-100 text-yellow-800" },
-  { value: "CONFIRMED", label: "Confirmed", badge: "bg-blue-100 text-blue-800" },
-  { value: "COMPLETED", label: "Completed", badge: "bg-green-100 text-green-800" },
-  { value: "CANCELLED", label: "Cancelled", badge: "bg-gray-100 text-gray-500" },
+  { value: "PENDING", label: "Pending" },
+  { value: "CONFIRMED", label: "Confirmed" },
+  { value: "COMPLETED", label: "Completed" },
+  { value: "CANCELLED", label: "Cancelled" },
 ] as const;
 
 export const PAYMENT_STATUSES = [
-  { value: "UNPAID", label: "Unpaid", badge: "bg-red-100 text-red-700" },
-  { value: "PARTIAL", label: "Partial", badge: "bg-orange-100 text-orange-800" },
-  { value: "PAID", label: "Paid", badge: "bg-green-100 text-green-800" },
+  { value: "UNPAID", label: "Unpaid" },
+  { value: "PARTIAL", label: "Partial" },
+  { value: "PAID", label: "Paid" },
 ] as const;
 
 export const ORDER_CHANNELS = [
@@ -52,10 +52,6 @@ export type FulfillmentStatusValue = (typeof FULFILLMENT_STATUSES)[number]["valu
 
 export function optionLabel(list: readonly Option[], value: string) {
   return list.find((o) => o.value === value)?.label ?? value;
-}
-
-export function optionBadge(list: readonly Option[], value: string) {
-  return list.find((o) => o.value === value)?.badge ?? "bg-gray-100 text-gray-600";
 }
 
 export function isOption(list: readonly Option[], value: string) {

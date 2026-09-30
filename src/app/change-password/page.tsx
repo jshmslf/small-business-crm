@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { ChangePasswordForm } from "./form";
 import { requireSignedIn } from "@/src/lib/session";
+import { AuthCard } from "@/src/components/auth-card";
 
 export default async function ChangePasswordPage() {
   const user = await requireSignedIn();
@@ -9,13 +10,16 @@ export default async function ChangePasswordPage() {
   if (!user.mustChangePassword) redirect("/dashboard");
 
   return (
-    <main className="mx-auto mt-20 max-w-sm space-y-4 p-4">
-      <h1 className="text-2xl font-bold">Set your password</h1>
-      <p className="text-sm text-gray-600">
-        Welcome, {user.name}! Your account was created with a temporary password.
-        Please choose your own password to continue.
-      </p>
+    <AuthCard
+      title="Set your password"
+      description={
+        <>
+          Welcome, {user.name}! Your account was created with a temporary password.
+          Please choose your own password to continue.
+        </>
+      }
+    >
       <ChangePasswordForm />
-    </main>
+    </AuthCard>
   );
 }

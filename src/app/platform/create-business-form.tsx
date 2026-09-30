@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import { createBusinessWithOwner } from "./actions";
+import { Button } from "@/src/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/src/components/ui/card";
+import { Input } from "@/src/components/ui/input";
+import { Field, FormActions, FormSection, Notice } from "@/src/components/form-field";
 
 const empty = { businessName: "", slug: "", ownerName: "", ownerEmail: "", tempPassword: "" };
 
@@ -36,31 +40,45 @@ export function CreateBusinessForm() {
     }
   }
 
-  const input = "w-full rounded border p-2";
-
   return (
-    <div className="space-y-3 rounded-lg border p-4">
-      <h2 className="text-lg font-semibold">New business</h2>
-      <input className={input} placeholder="Business name" value={form.businessName}
-        onChange={(e) => update("businessName", e.target.value)} />
-      <input className={input} placeholder="slug (e.g. juans-shop)" value={form.slug}
-        onChange={(e) => update("slug", e.target.value)} />
-      <h3 className="pt-2 font-medium">Owner account</h3>
-      <input className={input} placeholder="Owner name" value={form.ownerName}
-        onChange={(e) => update("ownerName", e.target.value)} />
-      <input className={input} placeholder="Owner email" type="email" value={form.ownerEmail}
-        onChange={(e) => update("ownerEmail", e.target.value)} />
-      <input className={input} placeholder="Temporary password (min 8)" type="text" value={form.tempPassword}
-        onChange={(e) => update("tempPassword", e.target.value)} />
-      {message && (
-        <p className={message.type === "error" ? "text-sm text-red-600" : "text-sm text-green-700"}>
-          {message.text}
-        </p>
-      )}
-      <button onClick={handleSubmit} disabled={loading}
-        className="rounded bg-black px-4 py-2 text-white disabled:opacity-50">
-        {loading ? "Creating..." : "Create business and owner"}
-      </button>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>New business</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <FormSection title="Business">
+          <Field label="Business name" htmlFor="businessName">
+            <Input id="businessName" placeholder="Business name" value={form.businessName}
+              onChange={(e) => update("businessName", e.target.value)} />
+          </Field>
+          <Field label="Slug" htmlFor="slug" hint="Used in the web address, e.g. /b/juans-shop">
+            <Input id="slug" placeholder="slug (e.g. juans-shop)" value={form.slug}
+              onChange={(e) => update("slug", e.target.value)} />
+          </Field>
+        </FormSection>
+        <FormSection title="Owner account">
+          <Field label="Owner name" htmlFor="ownerName">
+            <Input id="ownerName" placeholder="Owner name" value={form.ownerName}
+              onChange={(e) => update("ownerName", e.target.value)} />
+          </Field>
+          <Field label="Owner email" htmlFor="ownerEmail">
+            <Input id="ownerEmail" placeholder="Owner email" type="email" value={form.ownerEmail}
+              onChange={(e) => update("ownerEmail", e.target.value)} />
+          </Field>
+          <Field label="Temporary password" htmlFor="tempPassword" className="sm:col-span-2">
+            <Input id="tempPassword" placeholder="Temporary password (min 8)" type="text" value={form.tempPassword}
+              onChange={(e) => update("tempPassword", e.target.value)} />
+          </Field>
+        </FormSection>
+        {message && <Notice tone={message.type}>{message.text}</Notice>}
+      </CardContent>
+      <CardFooter className="border-t border-gray-200">
+        <FormActions>
+          <Button onClick={handleSubmit} disabled={loading}>
+            {loading ? "Creating..." : "Create business and owner"}
+          </Button>
+        </FormActions>
+      </CardFooter>
+    </Card>
   );
 }

@@ -1,12 +1,21 @@
 import Link from "next/link";
 import Form from "next/form";
 import { notFound } from "next/navigation";
+import { Plus, ShoppingBag } from "lucide-react";
+import { Button } from "@/src/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/src/components/ui/native-select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/components/ui/table";
+import { PageHeader } from "@/src/components/page-header";
+import { StatusBadge } from "@/src/components/status-badge";
+import { EmptyState } from "@/src/components/empty-state";
+import { EmptyRow, EntityCell, Meta, TableCard, TableFooterCount } from "@/src/components/data-table";
+import { FilterBar, FilterChip, SearchInput, hrefWithout } from "@/src/components/filter-bar";
 import { prisma } from "@/src/lib/prisma";
 import { requireBusinessAccess, can } from "@/src/lib/access";
 import { PERMISSIONS } from "@/src/lib/permissions";
 import { formatPeso } from "@/src/lib/money";
 import {
-  ORDER_STATUSES, PAYMENT_STATUSES, FULFILLMENT_STATUSES, optionLabel, optionBadge,
+  ORDER_STATUSES, PAYMENT_STATUSES, FULFILLMENT_STATUSES, optionLabel,
 } from "@/src/lib/order-options";
 
 export default async function OrdersPage({
@@ -53,78 +62,124 @@ export default async function OrdersPage({
 
   const base = `/b/${slug}/orders`;
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Orders</h1>
-        {can(access, PERMISSIONS.ORDERS_CREATE) && (
-          <Link href={`${base}/new`} className="rounded bg-black px-4 py-2 text-white">+ New order</Link>
-        )}
-      </div>
+  const canCreate = can(access, PERMISSIONS.ORDERS_CREATE);
+  const activeParams = { q, status, payment };
+  const filtered = Boolean(q || status || payment);
 
-      <Form action={base} className="flex flex-wrap gap-2">
-        <input name="q" defaultValue={q} placeholder="Order # or customer name/phone..."
-          className="min-w-64 flex-1 rounded border p-2" />
-        <select name="status" defaultValue={status} className="rounded border p-2">
-          <option value="">All statuses</option>
-          {ORDER_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-        </select>
-        <select name="payment" defaultValue={payment} className="rounded border p-2">
-          <option value="">All payments</option>
-          {PAYMENT_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-        </select>
-        <button className="rounded border px-4 py-2">Search</button>
-        {(q || status || payment) && <Link href={base} className="px-2 py-2 text-sm underline">Clear</Link>}
+  return (
+    <div>
+      <PageHeader
+        title="Orders"
+        actions={
+          canCreate && (
+            <Button asChild>
+              <Link href={`${base}/new`}>
+                <Plus aria-hidden />
+                New order
+              </Link>
+            </Button>
+          )
+        }
+      />
+
+      <Form action={base}>
+        <FilterBar
+          filters={
+            <>
+              <NativeSelect name="status" defaultValue={status} aria-label="Order status" wrapperClassName="w-full sm:w-44">
+                <NativeSelectOption value="">All statuses</NativeSelectOption>
+                {ORDER_STATUSES.map((s) => <NativeSelectOption key={s.value} value={s.value}>{s.label}</NativeSelectOption>)}
+              </NativeSelect>
+              <NativeSelect name="payment" defaultValue={payment} aria-label="Payment status" wrapperClassName="w-full sm:w-44">
+                <NativeSelectOption value="">All payments</NativeSelectOption>
+                {PAYMENT_STATUSES.map((s) => <NativeSelectOption key={s.value} value={s.value}>{s.label}</NativeSelectOption>)}
+              </NativeSelect>
+            </>
+          }
+          search={
+            <>
+              <SearchInput name="q" defaultValue={q} placeholder="Order # or customer name/phone..."
+                aria-label="Search orders" />
+              <Button type="submit" variant="secondary">Search</Button>
+              {filtered && (
+                <Button asChild variant="link" size="sm">
+                  <Link href={base}>Clear</Link>
+                </Button>
+              )}
+            </>
+          }
+          chips={
+            (search || statusFilter || paymentFilter) && (
+              <>
+                {search && <FilterChip href={hrefWithout(base, activeParams, "q")}>Search: &ldquo;{search}&rdquo;</FilterChip>}
+                {statusFilter && (
+                  <FilterChip href={hrefWithout(base, activeParams, "status")}>{optionLabel(ORDER_STATUSES, statusFilter)}</FilterChip>
+                )}
+                {paymentFilter && (
+                  <FilterChip href={hrefWithout(base, activeParams, "payment")}>{optionLabel(PAYMENT_STATUSES, paymentFilter)}</FilterChip>
+                )}
+              </>
+            )
+          }
+        />
       </Form>
 
-      <div className="overflow-x-auto rounded-lg border">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-gray-50 text-gray-600">
-            <tr>
-              <th className="p-3">Order</th>
-              <th className="p-3">Customer</th>
-              <th className="p-3 text-right">Total</th>
-              <th className="p-3">Payment</th>
-              <th className="p-3">Status</th>
-              <th className="p-3">Fulfillment</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
+      <TableCard footer={<TableFooterCount count={orders.length} noun={["order", "orders"]} />}>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Order</TableHead>
+              <TableHead>Customer</TableHead>
+              <TableHead className="text-right">Total</TableHead>
+              <TableHead>Payment</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Fulfillment</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {orders.map((o) => (
-              <tr key={o.id} className="hover:bg-gray-50">
-                <td className="p-3">
-                  <Link href={`${base}/${o.id}`} className="font-medium hover:underline">#{o.orderNumber}</Link>
-                  <p className="text-xs text-gray-500">
-                    {o.createdAt.toLocaleDateString("en-PH")} · {o._count.items} item(s)
-                  </p>
-                </td>
-                <td className="p-3">
+              <TableRow key={o.id}>
+                <TableCell>
+                  <EntityCell
+                    name={`#${o.orderNumber}`}
+                    href={`${base}/${o.id}`}
+                    secondary={<Meta items={[o.createdAt.toLocaleDateString("en-PH"), `${o._count.items} item(s)`]} />}
+                  />
+                </TableCell>
+                <TableCell className="text-gray-700">
                   {o.customer ? `${o.customer.firstName} ${o.customer.lastName ?? ""}` : <span className="text-gray-400">Walk-in</span>}
-                </td>
-                <td className="p-3 text-right">{formatPeso(o.total)}</td>
-                <td className="p-3">
-                  <span className={`rounded-full px-2 py-0.5 text-xs ${optionBadge(PAYMENT_STATUSES, o.paymentStatus)}`}>
-                    {optionLabel(PAYMENT_STATUSES, o.paymentStatus)}
-                  </span>
-                </td>
-                <td className="p-3">
-                  <span className={`rounded-full px-2 py-0.5 text-xs ${optionBadge(ORDER_STATUSES, o.status)}`}>
-                    {optionLabel(ORDER_STATUSES, o.status)}
-                  </span>
-                </td>
-                <td className="p-3 text-gray-600">{optionLabel(FULFILLMENT_STATUSES, o.fulfillmentStatus)}</td>
-              </tr>
+                </TableCell>
+                <TableCell className="text-right font-medium text-gray-900 tabular-nums">{formatPeso(o.total)}</TableCell>
+                <TableCell>
+                  <StatusBadge kind="payment" value={o.paymentStatus} />
+                </TableCell>
+                <TableCell>
+                  <StatusBadge kind="order" value={o.status} />
+                </TableCell>
+                <TableCell>{optionLabel(FULFILLMENT_STATUSES, o.fulfillmentStatus)}</TableCell>
+              </TableRow>
             ))}
             {orders.length === 0 && (
-              <tr>
-                <td colSpan={6} className="p-6 text-center text-gray-500">
-                  {q || status || payment ? "No orders match your filters." : "No orders yet."}
-                </td>
-              </tr>
+              <EmptyRow colSpan={6}>
+                <EmptyState
+                  icon={ShoppingBag}
+                  title={filtered ? "No orders match your filters." : "No orders yet."}
+                  action={
+                    !filtered && canCreate && (
+                      <Button asChild>
+                        <Link href={`${base}/new`}>
+                          <Plus aria-hidden />
+                          New order
+                        </Link>
+                      </Button>
+                    )
+                  }
+                />
+              </EmptyRow>
             )}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </TableCard>
     </div>
   );
 }

@@ -1,19 +1,118 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+ * Design tokens. Light theme only.
+ * The gray scale is overridden so `gray-*` utilities match the design spec exactly.
+ */
+@theme {
+  --color-gray-25: #fcfcfd;
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f2f4f7;
+  --color-gray-200: #eaecf0;
+  --color-gray-300: #d0d5dd;
+  --color-gray-400: #98a2b3;
+  --color-gray-500: #667085;
+  --color-gray-600: #475467;
+  --color-gray-700: #344054;
+  --color-gray-800: #182230;
+  --color-gray-900: #101828;
+  --color-gray-950: #0c111d;
+
+  --color-brand-25: #f5f8ff;
+  --color-brand-50: #eef4ff;
+  --color-brand-100: #e0eaff;
+  --color-brand-200: #c7d7fe;
+  --color-brand-300: #a4bcfd;
+  --color-brand-500: #6172f3;
+  --color-brand-600: #444ce7;
+  --color-brand-700: #3538cd;
+  --color-brand-800: #2d31a6;
+
+  --color-success-50: #ecfdf3;
+  --color-success-200: #abefc6;
+  --color-success-600: #079455;
+  --color-success-700: #067647;
+
+  --color-warning-50: #fffaeb;
+  --color-warning-200: #fedf89;
+  --color-warning-600: #dc6803;
+  --color-warning-700: #b54708;
+
+  --color-error-50: #fef3f2;
+  --color-error-200: #fecdca;
+  --color-error-600: #d92d20;
+  --color-error-700: #b42318;
+
+  --shadow-xs: 0 1px 2px 0 rgb(16 24 40 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(16 24 40 / 0.1), 0 1px 2px -1px rgb(16 24 40 / 0.1);
+  --shadow-lg: 0 12px 16px -4px rgb(16 24 40 / 0.08), 0 4px 6px -2px rgb(16 24 40 / 0.03);
+}
 
 :root {
+  --radius: 0.5rem;
+
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #101828;
+  --card: #ffffff;
+  --card-foreground: #101828;
+  --popover: #ffffff;
+  --popover-foreground: #101828;
+  --primary: #444ce7;
+  --primary-foreground: #ffffff;
+  --secondary: #f2f4f7;
+  --secondary-foreground: #344054;
+  --muted: #f9fafb;
+  --muted-foreground: #667085;
+  --accent: #f9fafb;
+  --accent-foreground: #182230;
+  --destructive: #d92d20;
+  --border: #eaecf0;
+  --input: #d0d5dd;
+  --ring: #444ce7;
 }
 
 @theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    color-scheme: light;
+  }
+  body {
+    @apply bg-background text-sm text-gray-700 antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply text-gray-900;
+  }
 }

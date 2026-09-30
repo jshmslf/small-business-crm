@@ -43,21 +43,14 @@ export default async function TeamPage({ params }: { params: Promise<{ slug: str
     .map((r) => ({ id: r.id, name: r.name, color: r.color }));
 
   return (
-    <div className="max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Team</h1>
-        <p className="text-gray-500">
-          {members.filter((m) => m.isActive).length} active member(s)
-        </p>
-      </div>
-      <TeamManager
-        slug={slug}
-        members={members}
-        assignableRoles={assignableRoles}
-        canCreate={can(access, PERMISSIONS.TEAM_CREATE)}
-        canEditRoles={can(access, PERMISSIONS.ROLES_MANAGE)}
-        canDeactivate={can(access, PERMISSIONS.TEAM_REMOVE)}
-      />
-    </div>
+    <TeamManager
+      slug={slug}
+      members={members}
+      assignableRoles={assignableRoles}
+      canCreate={can(access, PERMISSIONS.TEAM_CREATE)}
+      canEditRoles={can(access, PERMISSIONS.ROLES_MANAGE)}
+      canDeactivate={can(access, PERMISSIONS.TEAM_REMOVE)}
+      description={`${members.filter((m) => m.isActive).length} active member(s)`}
+    />
   );
 }

@@ -1,3 +1,4 @@
+import { PageHeader } from "@/src/components/page-header";
 import { notFound } from "next/navigation";
 import { SellerForm } from "../seller-form";
 import { can, requireBusinessAccess } from "@/src/lib/access";
@@ -9,8 +10,8 @@ export default async function NewSellerPage({ params }: { params: Promise<{ slug
   if (!can(access, PERMISSIONS.INVENTORY_CREATE)) notFound();
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Add seller</h1>
+    <div>
+      <PageHeader title="Add seller" />
       <SellerForm slug={slug} />
     </div>
   );

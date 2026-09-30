@@ -1,7 +1,16 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { ImageIcon, ImagePlus, Star, Trash2 } from "lucide-react";
 import { imageVariant } from "@/src/lib/image-url";
+import { cn } from "@/src/lib/utils";
+import { buttonVariants } from "@/src/components/ui/button";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
+import { Badge } from "@/src/components/status-badge";
+import { EmptyState } from "@/src/components/empty-state";
+import { Notice } from "@/src/components/form-field";
+import { ConfirmDialog } from "@/src/components/confirm-dialog";
+import { IconButton } from "@/src/components/icon-button";
 import { getUploadSignature, addItemImage, deleteItemImage, makeCoverImage } from "./photo-actions";
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -73,7 +82,6 @@ export function ItemPhotos({
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Delete this photo?")) return;
     setBusyId(id);
     const result = await deleteItemImage(slug, itemId, id);
     setBusyId(null);
@@ -88,44 +96,79 @@ export function ItemPhotos({
   }
 
   return (
-    <section className="max-w-2xl space-y-3">
-      <div className="flex items-center justify-between">
-        <h2 className="font-semibold">Photos ({photos.length}/10)</h2>
+    <Card className="max-w-3xl">
+      <CardHeader>
+        <CardTitle>Photos ({photos.length}/10)</CardTitle>
         {canEdit && (
-          <label className={`cursor-pointer rounded border px-3 py-1 text-sm ${remaining ? "opacity-50" : "hover:bg-gray-50"}`}>
-            {remaining ? `Uploading ${remaining}...` : "+ Add photos"}
-            <input ref={inputRef} type="file" accept="image/*" multiple hidden
-              disabled={remaining > 0} onChange={(e) => handleFiles(e.target.files)} />
-          </label>
+          <CardAction>
+            <label
+              className={cn(
+                buttonVariants({ variant: "secondary", size: "sm" }),
+                "cursor-pointer has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-brand-100",
+                remaining > 0 && "pointer-events-none opacity-50"
+              )}
+            >
+              <ImagePlus aria-hidden />
+              {remaining ? `Uploading ${remaining}...` : "Add photos"}
+              <input ref={inputRef} type="file" accept="image/*" multiple className="sr-only"
+                disabled={remaining > 0} onChange={(e) => handleFiles(e.target.files)} />
+            </label>
+          </CardAction>
         )}
-      </div>
+      </CardHeader>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      <CardContent className="space-y-4">
+        {error && <Notice tone="error">{error}</Notice>}
 
-      {photos.length === 0 ? (
-        <p className="rounded-lg border border-dashed p-6 text-center text-sm text-gray-500">
-          No photos yet{canEdit && ". The first photo you add becomes the cover"}.
-        </p>
-      ) : (
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
-          {photos.map((photo, index) => (
-            <div key={photo.id} className={`group relative overflow-hidden rounded-lg border ${busyId === photo.id ? "opacity-50" : ""}`}>
-              <img src={imageVariant(photo.url, 300)} alt="" className="aspect-square w-full object-cover" />
-              {index === 0 && (
-                <span className="absolute left-1 top-1 rounded bg-black/70 px-1.5 py-0.5 text-xs text-white">Cover</span>
-              )}
-              {canEdit && (
-                <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/60 p-1 text-xs text-white opacity-0 transition group-hover:opacity-100">
-                  {index !== 0 ? (
-                    <button onClick={() => handleMakeCover(photo.id)} disabled={!!busyId}>Make cover</button>
-                  ) : <span />}
-                  <button onClick={() => handleDelete(photo.id)} disabled={!!busyId}>Delete</button>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </section>
+        {photos.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-gray-300 bg-gray-25">
+            <EmptyState
+              icon={ImageIcon}
+              title="No photos yet"
+              description={canEdit ? "The first photo you add becomes the cover." : undefined}
+              className="py-8"
+            />
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+            {photos.map((photo, index) => (
+              <div key={photo.id}
+                className={cn(
+                  "group relative overflow-hidden rounded-lg border border-gray-200 bg-gray-50",
+                  busyId === photo.id && "opacity-50"
+                )}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={imageVariant(photo.url, 300)} alt="" className="aspect-square w-full object-cover" />
+                {index === 0 && (
+                  <Badge tone="brand" className="absolute top-2 left-2 shadow-xs">Cover</Badge>
+                )}
+                {canEdit && (
+                  <div className="absolute right-1.5 bottom-1.5 flex gap-1 transition-opacity sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100">
+                    {index !== 0 && (
+                      <IconButton label="Make cover" size="icon-xs" variant="secondary"
+                        onClick={() => handleMakeCover(photo.id)} disabled={!!busyId}>
+                        <Star />
+                      </IconButton>
+                    )}
+                    <ConfirmDialog
+                      trigger={
+                        <IconButton label="Delete" size="icon-xs" variant="secondary"
+                          className="text-error-700 hover:text-error-700" disabled={!!busyId}>
+                          <Trash2 />
+                        </IconButton>
+                      }
+                      title="Delete this photo?"
+                      confirmLabel="Delete"
+                      destructive
+                      onConfirm={() => handleDelete(photo.id)}
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

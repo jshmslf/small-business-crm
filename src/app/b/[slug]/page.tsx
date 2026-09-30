@@ -1,25 +1,18 @@
 import Link from "next/link";
+import { CheckCircle2, Plus, Store } from "lucide-react";
 import { prisma } from "@/src/lib/prisma";
 import { requireBusinessAccess, can } from "@/src/lib/access";
 import { PERMISSIONS } from "@/src/lib/permissions";
 import { formatPeso } from "@/src/lib/money";
 import { startOfTodayPH, startOfMonthPH } from "@/src/lib/dates";
-import { ORDER_STATUSES, PAYMENT_STATUSES, optionLabel, optionBadge } from "@/src/lib/order-options";
+import { Button } from "@/src/components/ui/button";
+import { PageHeader, SectionHeader } from "@/src/components/page-header";
+import { StatCard } from "@/src/components/stat-card";
+import { StatusBadge } from "@/src/components/status-badge";
+import { EmptyState } from "@/src/components/empty-state";
+import { Meta, TableCard } from "@/src/components/data-table";
 
-function Stat({ label, value, hint, href }: { label: string; value: string; hint?: string; href?: string }) {
-  const content = (
-    <>
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className="text-2xl font-bold">{value}</p>
-      {hint && <p className="text-xs text-gray-500">{hint}</p>}
-    </>
-  );
-  return href ? (
-    <Link href={href} className="rounded-lg border p-4 hover:bg-gray-50">{content}</Link>
-  ) : (
-    <div className="rounded-lg border p-4">{content}</div>
-  );
-}
+const STAT_GRID = "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-6 xl:grid-cols-4";
 
 export default async function BusinessHomePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -101,101 +94,127 @@ export default async function BusinessHomePage({ params }: { params: Promise<{ s
   const unpaid = (openBalance?._sum.total ?? 0) - (openBalance?._sum.amountPaid ?? 0);
 
   return (
-    <div className="max-w-5xl space-y-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Hello, {user.name}</h1>
-          <p className="text-gray-500">
-            {new Date().toLocaleDateString("en-PH", { timeZone: "Asia/Manila", weekday: "long", month: "long", day: "numeric" })}
-          </p>
-        </div>
-        {can(access, PERMISSIONS.ORDERS_CREATE) && (
-          <Link href={`${base}/orders/new`} className="rounded bg-black px-4 py-2 text-white">+ New order</Link>
+    <div>
+      <PageHeader
+        title={`Hello, ${user.name}`}
+        description={new Date().toLocaleDateString("en-PH", { timeZone: "Asia/Manila", weekday: "long", month: "long", day: "numeric" })}
+        actions={
+          can(access, PERMISSIONS.ORDERS_CREATE) && (
+            <Button asChild>
+              <Link href={`${base}/orders/new`}>
+                <Plus aria-hidden />
+                New order
+              </Link>
+            </Button>
+          )
+        }
+      />
+
+      <div className="space-y-10">
+        {canOrders && (
+          <section>
+            <SectionHeader title="Sales" />
+            <div className={STAT_GRID}>
+              <StatCard label="Sales today" value={formatPeso(salesToday?._sum.total ?? 0)}
+                hint={`${salesToday?._count ?? 0} completed order(s)`} />
+              <StatCard label="Collected today" value={formatPeso(collectedToday?._sum.amount ?? 0)}
+                hint="All payments received" />
+              <StatCard label="Sales this month" value={formatPeso(salesMonth?._sum.total ?? 0)}
+                hint={`${salesMonth?._count ?? 0} completed order(s)`} />
+              {canCost ? (
+                <StatCard label="Profit this month" value={formatPeso(monthProfit)} hint="From completed orders" />
+              ) : (
+                <StatCard label="Open orders" value={String(openOrders)} href={`${base}/orders?status=PENDING`} />
+              )}
+            </div>
+          </section>
+        )}
+
+        {canOrders && (
+          <section>
+            <SectionHeader title="Needs attention" />
+            <TableCard
+              header={
+                <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+                  <p className="flex flex-wrap items-baseline gap-x-2">
+                    <span className="text-2xl leading-8 font-semibold tracking-tight text-gray-900 tabular-nums">
+                      {formatPeso(unpaid)}
+                    </span>
+                    <span className="text-sm text-gray-500">still to collect</span>
+                  </p>
+                  <p className="text-sm text-gray-500">{openOrders} open order(s)</p>
+                </div>
+              }
+            >
+              {attention.length > 0 ? (
+                <ul className="divide-y divide-gray-200">
+                  {attention.map((o) => {
+                    const balance = o.total - o.amountPaid;
+                    return (
+                      <li key={o.id}>
+                        <Link href={`${base}/orders/${o.id}`}
+                          className="flex flex-col gap-3 px-5 py-4 outline-none hover:bg-gray-50 focus-visible:bg-gray-50 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                          <div className="min-w-0">
+                            <p className="truncate font-medium text-gray-900">
+                              {o.customer ? `${o.customer.firstName} ${o.customer.lastName ?? ""}` : "Walk-in"}
+                            </p>
+                            <Meta
+                              className="text-sm text-gray-500"
+                              items={[`#${o.orderNumber}`, o.createdAt.toLocaleDateString("en-PH")]}
+                            />
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                            {balance > 0 && (
+                              <span className="mr-1 font-medium text-error-700 tabular-nums">{formatPeso(balance)} due</span>
+                            )}
+                            <StatusBadge kind="payment" value={o.paymentStatus} />
+                            <StatusBadge kind="order" value={o.status} />
+                          </div>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <EmptyState icon={CheckCircle2} title="No open orders." description="All caught up!" />
+              )}
+            </TableCard>
+          </section>
+        )}
+
+        {(canInventory || canCustomers) && (
+          <section>
+            <SectionHeader title="Shop" />
+            <div className={STAT_GRID}>
+              {canInventory && (
+                <StatCard label="Available items" value={String(stockUnits)} href={`${base}/inventory?status=AVAILABLE`} />
+              )}
+              {canInventory && (
+                <StatCard label="Reserved" value={String(reservedCount)} href={`${base}/inventory?status=RESERVED`} />
+              )}
+              {canInventory && (
+                <StatCard label="Stock value" value={formatPeso(stockValue)}
+                  hint={canCost ? (
+                    <Meta items={[`Cost ${formatPeso(stockCost)}`, `potential profit ${formatPeso(stockValue - stockCost)}`]} />
+                  ) : "At selling price"} />
+              )}
+              {canCustomers && (
+                <StatCard label="New leads this month" value={String(newLeads)} href={`${base}/customers?status=LEAD`} />
+              )}
+            </div>
+          </section>
+        )}
+
+        {!canOrders && !canInventory && !canCustomers && (
+          <div className="rounded-xl border border-gray-200 bg-white shadow-xs">
+            <EmptyState
+              icon={Store}
+              title={`You're signed in to ${access.business.name}.`}
+              description="Ask your owner if you need access to more sections."
+            />
+          </div>
         )}
       </div>
-
-      {canOrders && (
-        <section className="space-y-3">
-          <h2 className="font-semibold">Sales</h2>
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <Stat label="Sales today" value={formatPeso(salesToday?._sum.total ?? 0)}
-              hint={`${salesToday?._count ?? 0} completed order(s)`} />
-            <Stat label="Collected today" value={formatPeso(collectedToday?._sum.amount ?? 0)}
-              hint="All payments received" />
-            <Stat label="Sales this month" value={formatPeso(salesMonth?._sum.total ?? 0)}
-              hint={`${salesMonth?._count ?? 0} completed order(s)`} />
-            {canCost ? (
-              <Stat label="Profit this month" value={formatPeso(monthProfit)} hint="From completed orders" />
-            ) : (
-              <Stat label="Open orders" value={String(openOrders)} href={`${base}/orders?status=PENDING`} />
-            )}
-          </div>
-        </section>
-      )}
-
-      {canOrders && (
-        <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold">Needs attention</h2>
-            <p className="text-sm text-gray-500">
-              {openOrders} open order(s) · {formatPeso(unpaid)} still to collect
-            </p>
-          </div>
-          <div className="divide-y rounded-lg border">
-            {attention.map((o) => {
-              const balance = o.total - o.amountPaid;
-              return (
-                <Link key={o.id} href={`${base}/orders/${o.id}`}
-                  className="flex items-center justify-between p-3 text-sm hover:bg-gray-50">
-                  <div>
-                    <p className="font-medium">
-                      #{o.orderNumber} · {o.customer ? `${o.customer.firstName} ${o.customer.lastName ?? ""}` : "Walk-in"}
-                    </p>
-                    <p className="text-xs text-gray-500">{o.createdAt.toLocaleDateString("en-PH")}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {balance > 0 && <span className="text-red-600">{formatPeso(balance)} due</span>}
-                    <span className={`rounded-full px-2 py-0.5 text-xs ${optionBadge(PAYMENT_STATUSES, o.paymentStatus)}`}>
-                      {optionLabel(PAYMENT_STATUSES, o.paymentStatus)}
-                    </span>
-                    <span className={`rounded-full px-2 py-0.5 text-xs ${optionBadge(ORDER_STATUSES, o.status)}`}>
-                      {optionLabel(ORDER_STATUSES, o.status)}
-                    </span>
-                  </div>
-                </Link>
-              );
-            })}
-            {attention.length === 0 && <p className="p-4 text-sm text-gray-500">No open orders. All caught up!</p>}
-          </div>
-        </section>
-      )}
-
-      {(canInventory || canCustomers) && (
-        <section className="space-y-3">
-          <h2 className="font-semibold">Shop</h2>
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            {canInventory && (
-              <Stat label="Available items" value={String(stockUnits)} href={`${base}/inventory?status=AVAILABLE`} />
-            )}
-            {canInventory && (
-              <Stat label="Reserved" value={String(reservedCount)} href={`${base}/inventory?status=RESERVED`} />
-            )}
-            {canInventory && (
-              <Stat label="Stock value" value={formatPeso(stockValue)}
-                hint={canCost ? `Cost ${formatPeso(stockCost)} · potential profit ${formatPeso(stockValue - stockCost)}` : "At selling price"} />
-            )}
-            {canCustomers && (
-              <Stat label="New leads this month" value={String(newLeads)} href={`${base}/customers?status=LEAD`} />
-            )}
-          </div>
-        </section>
-      )}
-
-      {!canOrders && !canInventory && !canCustomers && (
-        <p className="text-gray-500">
-          You&apos;re signed in to {access.business.name}. Ask your owner if you need access to more sections.
-        </p>
-      )}
     </div>
   );
 }

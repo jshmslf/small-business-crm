@@ -8,10 +8,10 @@ export const CUSTOMER_SOURCES = [
 ] as const;
 
 export const CUSTOMER_STATUSES = [
-    { value: "LEAD", label: "Lead", badge: "bg-yellow-100 text-yellow-800" },
-    { value: "ACTIVE", label: "Active", badge: "bg-green-100 text-green-800" },
-    { value: "REPEAT", label: "Repeat buyer", badge: "bg-blue-100 text-blue-800" },
-    { value: "INACTIVE", label: "Inactive", badge: "bg-gray-100 text-gray-600" },
+    { value: "LEAD", label: "Lead" },
+    { value: "ACTIVE", label: "Active" },
+    { value: "REPEAT", label: "Repeat buyer" },
+    { value: "INACTIVE", label: "Inactive" },
 ] as const;
 
 export type CustomerSourceValue = (typeof CUSTOMER_SOURCES)[number]["value"];

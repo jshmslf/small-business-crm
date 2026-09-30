@@ -1,3 +1,4 @@
+import { PageHeader } from "@/src/components/page-header";
 import { can, requireBusinessAccess } from "@/src/lib/access";
 import { PERMISSIONS } from "@/src/lib/permissions";
 import { prisma } from "@/src/lib/prisma";
@@ -28,8 +29,8 @@ export default async function NewOrderPage({ params }: { params: Promise<{ slug:
     ]);
 
     return (
-        <div className="space-y-6">
-            <h1 className="text-2xl font-bold">New order</h1>
+        <div>
+            <PageHeader title="New order" />
             <NewOrderForm
                 slug={slug}
                 customers={customers.map((c) => ({

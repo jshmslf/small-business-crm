@@ -1,3 +1,4 @@
+import { PageHeader } from "@/src/components/page-header";
 import { notFound } from "next/navigation";
 import { requireBusinessAccess, can, getItemFormOptions } from "@/src/lib/access";
 import { PERMISSIONS } from "@/src/lib/permissions";
@@ -11,8 +12,8 @@ export default async function NewItemPage({ params }: { params: Promise<{ slug: 
   const { sellers, categories } = await getItemFormOptions(access.business.id);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Add item</h1>
+    <div>
+      <PageHeader title="Add item" />
       <ItemForm
         slug={slug}
         sellers={sellers}

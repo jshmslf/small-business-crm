@@ -1,6 +1,13 @@
 import Link from "next/link";
 import Form from "next/form";
 import { notFound } from "next/navigation";
+import { Handshake, Plus } from "lucide-react";
+import { Button } from "@/src/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/components/ui/table";
+import { PageHeader } from "@/src/components/page-header";
+import { EmptyState } from "@/src/components/empty-state";
+import { EmptyRow, EntityCell, TableCard, TableFooterCount } from "@/src/components/data-table";
+import { FilterBar, FilterChip, SearchInput, hrefWithout } from "@/src/components/filter-bar";
 import { can, requireBusinessAccess } from "@/src/lib/access";
 import { PERMISSIONS } from "@/src/lib/permissions";
 import { prisma } from "@/src/lib/prisma";
@@ -37,59 +44,90 @@ export default async function SellersPage({
 
   const base = `/b/${slug}/sellers`;
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Sellers</h1>
-          <p className="text-gray-500">People and suppliers you get items from</p>
-        </div>
-        {can(access, PERMISSIONS.INVENTORY_CREATE) && (
-          <Link href={`${base}/new`} className="rounded bg-black px-4 py-2 text-white">+ Add seller</Link>
-        )}
-      </div>
+  const canCreate = can(access, PERMISSIONS.INVENTORY_CREATE);
 
-      <Form action={base} className="flex gap-2">
-        <input name="q" defaultValue={q} placeholder="Search name, phone, Facebook..."
-          className="flex-1 rounded border p-2" />
-        <button className="rounded border px-4 py-2">Search</button>
-        {q && <Link href={base} className="px-2 py-2 text-sm underline">Clear</Link>}
+  return (
+    <div>
+      <PageHeader
+        title="Sellers"
+        description="People and suppliers you get items from"
+        actions={
+          canCreate && (
+            <Button asChild>
+              <Link href={`${base}/new`}>
+                <Plus aria-hidden />
+                Add seller
+              </Link>
+            </Button>
+          )
+        }
+      />
+
+      <Form action={base}>
+        <FilterBar
+          search={
+            <>
+              <SearchInput name="q" defaultValue={q} placeholder="Search name, phone, Facebook..."
+                aria-label="Search sellers" />
+              <Button type="submit" variant="secondary">Search</Button>
+              {q && (
+                <Button asChild variant="link" size="sm">
+                  <Link href={base}>Clear</Link>
+                </Button>
+              )}
+            </>
+          }
+          chips={
+            search && <FilterChip href={hrefWithout(base, { q }, "q")}>Search: &ldquo;{search}&rdquo;</FilterChip>
+          }
+        />
       </Form>
 
-      <div className="overflow-x-auto rounded-lg border">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-gray-50 text-gray-600">
-            <tr>
-              <th className="p-3">Name</th>
-              <th className="p-3">Contact</th>
-              <th className="p-3">Items</th>
-              <th className="p-3">Added</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
+      <TableCard footer={<TableFooterCount count={sellers.length} noun={["seller", "sellers"]} />}>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Contact</TableHead>
+              <TableHead className="text-right">Items</TableHead>
+              <TableHead>Added</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {sellers.map((s) => (
-              <tr key={s.id} className="hover:bg-gray-50">
-                <td className="p-3">
-                  <Link href={`${base}/${s.id}`} className="font-medium hover:underline">{s.name}</Link>
-                </td>
-                <td className="p-3 text-gray-600">
-                  {s.phone && <p>{s.phone}</p>}
+              <TableRow key={s.id}>
+                <TableCell className="min-w-56">
+                  <EntityCell avatar={s.name} name={s.name} href={`${base}/${s.id}`} secondary={s.email} />
+                </TableCell>
+                <TableCell>
+                  {s.phone && <p className="text-gray-700">{s.phone}</p>}
                   {s.facebookName && <p>FB: {s.facebookName}</p>}
-                </td>
-                <td className="p-3 text-gray-600">{s._count.items}</td>
-                <td className="p-3 text-gray-600">{s.createdAt.toLocaleDateString("en-PH")}</td>
-              </tr>
+                </TableCell>
+                <TableCell className="text-right tabular-nums">{s._count.items}</TableCell>
+                <TableCell>{s.createdAt.toLocaleDateString("en-PH")}</TableCell>
+              </TableRow>
             ))}
             {sellers.length === 0 && (
-              <tr>
-                <td colSpan={4} className="p-6 text-center text-gray-500">
-                  {q ? "No sellers match your search." : "No sellers yet."}
-                </td>
-              </tr>
+              <EmptyRow colSpan={4}>
+                <EmptyState
+                  icon={Handshake}
+                  title={q ? "No sellers match your search." : "No sellers yet."}
+                  action={
+                    !q && canCreate && (
+                      <Button asChild>
+                        <Link href={`${base}/new`}>
+                          <Plus aria-hidden />
+                          Add seller
+                        </Link>
+                      </Button>
+                    )
+                  }
+                />
+              </EmptyRow>
             )}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </TableCard>
     </div>
   );
 }
