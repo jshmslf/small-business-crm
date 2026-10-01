@@ -11,9 +11,8 @@ import { EmptyState } from "@/src/components/empty-state";
 import { Notice } from "@/src/components/form-field";
 import { ConfirmDialog } from "@/src/components/confirm-dialog";
 import { IconButton } from "@/src/components/icon-button";
-import { getUploadSignature, addItemImage, deleteItemImage, makeCoverImage } from "./photo-actions";
-
-const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+import { deleteItemImage, makeCoverImage } from "./photo-actions";
+import { uploadOne } from "../upload-photo";
 
 export function ItemPhotos({
   slug,
@@ -31,33 +30,6 @@ export function ItemPhotos({
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
-  async function uploadOne(file: File) {
-    if (!file.type.startsWith("image/")) throw new Error(`${file.name} isn't an image.`);
-    if (file.size > MAX_SIZE) throw new Error(`${file.name} is larger than 10 MB.`);
-
-    // 1. Ask your server for permission
-    const sig = await getUploadSignature(slug, itemId);
-    if (!sig.ok) throw new Error(sig.error);
-
-    // 2. Upload straight to Cloudinary
-    const body = new FormData();
-    body.append("file", file);
-    body.append("api_key", sig.apiKey);
-    body.append("timestamp", String(sig.timestamp));
-    body.append("signature", sig.signature);
-    body.append("folder", sig.folder);
-
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`, {
-      method: "POST",
-      body,
-    });
-    if (!res.ok) throw new Error(`Upload failed for ${file.name}.`);
-    const data = await res.json();
-
-    // 3. Tell your server to save it
-    const saved = await addItemImage(slug, itemId, { publicId: data.public_id, url: data.secure_url });
-    if (!saved.ok) throw new Error(saved.error);
-  }
 
   async function handleFiles(files: FileList | null) {
     if (!files?.length) return;
@@ -68,7 +40,7 @@ export function ItemPhotos({
     // One at a time, so photos keep the order you selected them in
     for (const file of list) {
       try {
-        await uploadOne(file);
+        await uploadOne(slug, itemId, file);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Upload failed.");
         break;

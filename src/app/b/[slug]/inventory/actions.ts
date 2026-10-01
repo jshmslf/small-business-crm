@@ -11,7 +11,6 @@ import {
   type ItemConditionValue,
   type ItemStatusValue,
 } from "@/src/lib/item-options";
-import { cloudflare } from "better-auth";
 import { cloudinary } from "@/src/lib/cloudinary";
 
 type Result = { ok: true;  id?: string } | { ok: false; error: string };
@@ -113,13 +112,6 @@ export async function createItem(slug: string, input: ItemInput): Promise<Result
 
   const result = await validate(input, access);
   if ("error" in result) return { ok: false, error: result.error! };
-
-  try {
-    await prisma.item.create({ data: { ...result.data, businessId: access.business.id } });
-  } catch (error) {
-    if (isDuplicateSku(error)) return { ok: false, error: "Another item already uses that SKU." };
-    return { ok: false, error: "Could not save the item." };
-  }
 
   let created;
   try {

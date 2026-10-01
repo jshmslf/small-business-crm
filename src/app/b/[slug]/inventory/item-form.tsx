@@ -12,6 +12,7 @@ import { NativeSelect, NativeSelectOption } from "@/src/components/ui/native-sel
 import { Textarea } from "@/src/components/ui/textarea";
 import { Field, FormActions, FormSection, Notice } from "@/src/components/form-field";
 import { ConfirmDialog } from "@/src/components/confirm-dialog";
+import { uploadOne } from "./upload-photo";
 
 const emptyItem: ItemInput = {
   name: "", description: "", category: "", sku: "", condition: "GOOD", status: "AVAILABLE",
@@ -41,6 +42,8 @@ export function ItemForm({
   const [saving, setSaving] = useState(false);
   const listUrl = `/b/${slug}/inventory`;
 
+  const [photos, setPhotos] = useState<{ file: File; preview: string }[]>([]);
+
   function update(field: keyof ItemInput, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
@@ -55,10 +58,27 @@ export function ItemForm({
   async function handleSave() {
     setError("");
     setSaving(true);
-    const result = item ? await updateItem(slug, item.id, form) : await createItem(slug, form);
-    setSaving(false);
-    if (!result.ok) return setError(result.error);
-    router.push(!item && result.id ? `${listUrl}/${result.id}` : listUrl);
+
+    if (item) {
+      const result = await updateItem(slug, item.id, form);
+      setSaving(false);
+      if (!result.ok) return setError(result.error);
+      return router.push(listUrl);
+    }
+
+    const result = await createItem(slug, form);
+    if (!result.ok || !result.id) {
+      setSaving(false);
+      return setError(result.ok ? "Could not save the item." : result.error);
+    }
+
+    let failed = false;
+    for (const p of photos) {
+      try { await uploadOne(slug, result.id, p.file); }
+      catch { failed = true; break };
+    }
+
+    router.push(`${listUrl}/${result.id}${failed ? "?photos=failed" : ""}`)
   }
 
   async function handleDelete() {
