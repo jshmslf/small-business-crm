@@ -69,22 +69,24 @@ export function ItemForm({
       picked.push({ file, preview: URL.createObjectURL(file) });
     }
     setPhotos((prev) => [...prev, ...picked]);
-  };
+  }
 
   function removePhoto(index: number) {
     setPhotos((prev) => {
       URL.revokeObjectURL(prev[index].preview);
       return prev.filter((_, i) => i !== index);
-    })
-  };
+    });
+  }
   
   const photosRef = useRef(photos);
-  photosRef.current = photos;
+
+  useEffect(() => {
+    photosRef.current = photos;    
+  }, [photos]);
 
   useEffect(() => {
     return () => photosRef.current.forEach((p) => URL.revokeObjectURL(p.preview));
   }, []);
-
 
   // Live profit preview
   const cost = parsePeso(form.costPrice);
