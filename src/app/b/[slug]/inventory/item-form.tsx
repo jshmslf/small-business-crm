@@ -65,18 +65,26 @@ export function ItemForm({
       if (photos.length + picked.length >= MAX_PHOTOS) {
         setError(`Items can have up to ${MAX_PHOTOS} photos.`);
         break;
-      };
+      }
       picked.push({ file, preview: URL.createObjectURL(file) });
-    };
+    }
     setPhotos((prev) => [...prev, ...picked]);
-  }
+  };
 
   function removePhoto(index: number) {
     setPhotos((prev) => {
       URL.revokeObjectURL(prev[index].preview);
       return prev.filter((_, i) => i !== index);
-    });
-  };  
+    })
+  };
+  
+  const photosRef = useRef(photos);
+  photosRef.current = photos;
+
+  useEffect(() => {
+    return () => photosRef.current.forEach((p) => URL.revokeObjectURL(p.preview));
+  }, []);
+
 
   // Live profit preview
   const cost = parsePeso(form.costPrice);
@@ -122,7 +130,7 @@ export function ItemForm({
   return (
     <Card className="max-w-3xl">
       <CardContent>
-        <fieldset disabled={!canEdit} className="space-y-6">
+        <fieldset disabled={!canEdit || saving} className="space-y-6">
           <FormSection title="Details">
             <Field label="Item name" htmlFor="name" required className="sm:col-span-2">
               <Input id="name" placeholder="e.g. iPhone 13 128GB Blue" value={form.name}
@@ -192,7 +200,7 @@ export function ItemForm({
                 onChange={(e) => update("acquiredAt", e.target.value)} />
             </Field>
           </FormSection>
-                    {!item && canAddPhotos && (
+          {!item && canAddPhotos && (
             <FormSection title="Photos" description="Optional. The first photo becomes the cover." columns={1}>
               <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
                 {photos.map((p, index) => (
@@ -244,7 +252,7 @@ export function ItemForm({
           </Button>
           {canEdit && (
             <Button onClick={handleSave} disabled={saving}>
-              {saving ? "Saving..." : item ? "Save changes" : "Add item"}
+              {saving ? (progress || "Saving...") : item ? "Save changes" : "Add item"}
             </Button>
           )}
         </FormActions>
