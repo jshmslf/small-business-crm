@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ITEM_CONDITIONS, ITEM_STATUSES } from "@/src/lib/item-options";
 import { formatPeso, parsePeso } from "@/src/lib/money";
@@ -12,7 +12,10 @@ import { NativeSelect, NativeSelectOption } from "@/src/components/ui/native-sel
 import { Textarea } from "@/src/components/ui/textarea";
 import { Field, FormActions, FormSection, Notice } from "@/src/components/form-field";
 import { ConfirmDialog } from "@/src/components/confirm-dialog";
-import { uploadOne } from "./upload-photo";
+import { checkPhoto, MAX_PHOTOS, uploadOne } from "./upload-photo";
+import { ImagePlus, X } from "lucide-react";
+import { IconButton } from "@/src/components/icon-button";
+import { Badge } from "@/src/components/status-badge";
 
 const emptyItem: ItemInput = {
   name: "", description: "", category: "", sku: "", condition: "GOOD", status: "AVAILABLE",
@@ -27,6 +30,7 @@ export function ItemForm({
   canEdit = true,
   canDelete = false,
   canViewCost = false,
+  canAddPhotos = false,
 }: {
   slug: string;
   sellers: { id: string; name: string }[];
@@ -34,6 +38,7 @@ export function ItemForm({
   item?: ItemInput & { id: string };
   canEdit?: boolean;
   canDelete?: boolean;
+  canAddPhotos?: boolean;
   canViewCost?: boolean;
 }) {
   const router = useRouter();
@@ -41,12 +46,37 @@ export function ItemForm({
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const listUrl = `/b/${slug}/inventory`;
+  const [progress, setProgress] = useState("");
 
   const [photos, setPhotos] = useState<{ file: File; preview: string }[]>([]);
 
   function update(field: keyof ItemInput, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
+
+  function handlePick(files: FileList | null) {
+    if (!files?.length) return;
+    setError("");
+
+    const picked: { file: File; preview: string }[] = [];
+    for (const file of Array.from(files)) {
+      const problem = checkPhoto(file);
+      if (problem) { setError(problem); continue; }
+      if (photos.length + picked.length >= MAX_PHOTOS) {
+        setError(`Items can have up to ${MAX_PHOTOS} photos.`);
+        break;
+      };
+      picked.push({ file, preview: URL.createObjectURL(file) });
+    };
+    setPhotos((prev) => [...prev, ...picked]);
+  }
+
+  function removePhoto(index: number) {
+    setPhotos((prev) => {
+      URL.revokeObjectURL(prev[index].preview);
+      return prev.filter((_, i) => i !== index);
+    });
+  };  
 
   // Live profit preview
   const cost = parsePeso(form.costPrice);
@@ -73,12 +103,13 @@ export function ItemForm({
     }
 
     let failed = false;
-    for (const p of photos) {
+    for (const [i, p] of photos.entries()) {
+      setProgress(`Uploading photo ${i + 1} of ${photos.length}...`);
       try { await uploadOne(slug, result.id, p.file); }
-      catch { failed = true; break };
+      catch { failed = true; break; }
     }
 
-    router.push(`${listUrl}/${result.id}${failed ? "?photos=failed" : ""}`)
+    router.push(`${listUrl}/${result.id}${failed ? "?photos=failed" : ""}`);
   }
 
   async function handleDelete() {
@@ -161,6 +192,33 @@ export function ItemForm({
                 onChange={(e) => update("acquiredAt", e.target.value)} />
             </Field>
           </FormSection>
+                    {!item && canAddPhotos && (
+            <FormSection title="Photos" description="Optional. The first photo becomes the cover." columns={1}>
+              <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+                {photos.map((p, index) => (
+                  <div key={p.preview} className="relative overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={p.preview} alt="" className="aspect-square w-full object-cover" />
+                    {index === 0 && <Badge tone="brand" className="absolute top-2 left-2 shadow-xs">Cover</Badge>}
+                    <IconButton label="Remove" size="icon-xs" variant="secondary"
+                      className="absolute right-1.5 bottom-1.5" onClick={() => removePhoto(index)}>
+                      <X />
+                    </IconButton>
+                  </div>
+                ))}
+
+                {photos.length < MAX_PHOTOS && (
+                  <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-gray-300 bg-gray-25 text-sm text-gray-500 hover:bg-gray-50 has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-brand-100">
+                    <ImagePlus aria-hidden />
+                    Add photos
+                    <input type="file" accept="image/*" multiple className="sr-only"
+                      onChange={(e) => { handlePick(e.target.files); e.target.value = ""; }} />
+                  </label>
+                )}
+              </div>
+            </FormSection>
+          )}
+
         </fieldset>
 
         {error && <Notice tone="error" className="mt-6">{error}</Notice>}

@@ -19,6 +19,7 @@ export default async function NewItemPage({ params }: { params: Promise<{ slug: 
         sellers={sellers}
         categories={categories}
         canViewCost={can(access, PERMISSIONS.INVENTORY_VIEW_COST)}
+        canAddPhotos={can(access, PERMISSIONS.INVENTORY_EDIT)}
       />
     </div>
   );

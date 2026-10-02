@@ -7,9 +7,17 @@ import { ItemForm } from "../item-form";
 import { ItemPhotos } from "./item-photos";
 import { PageHeader } from "@/src/components/page-header";
 import { Meta } from "@/src/components/data-table";
+import { Notice } from "@/src/components/form-field";
 
-export default async function ItemPage({ params }: { params: Promise<{ slug: string; id: string }> }) {
+export default async function ItemPage({
+  params,
+  searchParams,
+}: {
+    params: Promise<{ slug: string; id: string }>;
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+  }) {
   const { slug, id } = await params;
+  const { photos } = await searchParams;
   const { access } = await requireBusinessAccess(slug);
   if (!can(access, PERMISSIONS.INVENTORY_VIEW)) notFound();
 
@@ -50,6 +58,11 @@ export default async function ItemPage({ params }: { params: Promise<{ slug: str
           ]} />
         }
       />
+      {photos === "failed" && (
+        <Notice tone="warning" className="max-w-3xl">
+          The item was saved, but some photos didn&apos;t upload. You can add them below.
+        </Notice>
+      )}
       <ItemPhotos
         slug={slug}
         itemId={item.id}
