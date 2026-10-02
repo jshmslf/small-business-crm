@@ -31,15 +31,17 @@ export function ItemForm({
   canDelete = false,
   canViewCost = false,
   canAddPhotos = false,
+  existingPhotoCount = 0,
 }: {
-  slug: string;
-  sellers: { id: string; name: string }[];
-  categories: string[];
-  item?: ItemInput & { id: string };
-  canEdit?: boolean;
-  canDelete?: boolean;
-  canAddPhotos?: boolean;
-  canViewCost?: boolean;
+    slug: string;
+    sellers: { id: string; name: string }[];
+    categories: string[];
+    item?: ItemInput & { id: string };
+    canEdit?: boolean;
+    canDelete?: boolean;
+    canAddPhotos?: boolean;
+    existingPhotoCount?: number;
+    canViewCost?: boolean;
 }) {
   const router = useRouter();
   const [form, setForm] = useState<ItemInput>(item ?? emptyItem);
@@ -62,7 +64,7 @@ export function ItemForm({
     for (const file of Array.from(files)) {
       const problem = checkPhoto(file);
       if (problem) { setError(problem); continue; }
-      if (photos.length + picked.length >= MAX_PHOTOS) {
+      if (existingPhotoCount + photos.length + picked.length >= MAX_PHOTOS) {
         setError(`Items can have up to ${MAX_PHOTOS} photos.`);
         break;
       }
@@ -77,6 +79,14 @@ export function ItemForm({
       return prev.filter((_, i) => i !== index);
     });
   }
+
+  function handleCancel() {
+    photos.forEach((p) => URL.revokeObjectURL(p.preview));
+    setPhotos([]);
+    setForm(item ?? emptyItem);
+    setError("");
+    router.push(listUrl);
+  }
   
   const photosRef = useRef(photos);
 
@@ -88,6 +98,20 @@ export function ItemForm({
     return () => photosRef.current.forEach((p) => URL.revokeObjectURL(p.preview));
   }, []);
 
+  const initial = item ?? emptyItem;
+  const isDirty =
+    photos.length > 0 ||
+    (Object.keys(emptyItem) as (keyof ItemInput)[]).some((key) => form[key] !== initial[key]);
+  
+  useEffect(() => {
+    if (!isDirty) return;
+    function warn(e: BeforeUnloadEvent) {
+      e.preventDefault();
+    }
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [isDirty]);
+
   // Live profit preview
   const cost = parsePeso(form.costPrice);
   const selling = parsePeso(form.sellingPrice);
@@ -95,14 +119,35 @@ export function ItemForm({
     cost.ok && selling.ok && cost.value !== null && selling.value !== null ? selling.value - cost.value : null;
   const margin = profit !== null && selling.ok && selling.value ? Math.round((profit / selling.value) * 100) : null;
 
+  // uploads the staged photos in order, rerturn true if any failed
+  async function uploadStaged(itemId: string) {
+    for (const [i, p] of photos.entries()) {
+      setProgress(`Uploading photo ${i + 1} of ${photos.length}...`);
+      try { await uploadOne(slug, itemId, p.file); }
+      catch { return true }
+    }
+    return false;
+  }
+
   async function handleSave() {
     setError("");
     setSaving(true);
 
     if (item) {
       const result = await updateItem(slug, item.id, form);
-      setSaving(false);
-      if (!result.ok) return setError(result.error);
+      if (!result.ok) {
+        setSaving(false); return setError(result.error)
+      };
+
+      const failed = await uploadStaged(item.id);
+      if (failed) {
+        // we stay on this same page, so the form is not remounted
+        photos.forEach((p) => URL.revokeObjectURL(p.preview));
+        setPhotos([]);
+        setSaving(false);
+        setProgress("");
+        return router.push(`${listUrl}/${item.id}?photos=failed`);
+      }
       return router.push(listUrl);
     }
 
@@ -202,14 +247,15 @@ export function ItemForm({
                 onChange={(e) => update("acquiredAt", e.target.value)} />
             </Field>
           </FormSection>
-          {!item && canAddPhotos && (
-            <FormSection title="Photos" description="Optional. The first photo becomes the cover." columns={1}>
+          {canAddPhotos && (
+            <FormSection title={item ? "New photos" : "Photos"} description={item ? "These upload when you save changes." : "Optional. The first photo becomes the cover."} columns={1}
+            >
               <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
                 {photos.map((p, index) => (
                   <div key={p.preview} className="relative overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={p.preview} alt="" className="aspect-square w-full object-cover" />
-                    {index === 0 && <Badge tone="brand" className="absolute top-2 left-2 shadow-xs">Cover</Badge>}
+                    {index === 0 && existingPhotoCount === 0 && <Badge tone="brand" className="absolute top-2 left-2 shadow-xs">Cover</Badge>}
                     <IconButton label="Remove" size="icon-xs" variant="secondary"
                       className="absolute right-1.5 bottom-1.5" onClick={() => removePhoto(index)}>
                       <X />
@@ -217,7 +263,7 @@ export function ItemForm({
                   </div>
                 ))}
 
-                {photos.length < MAX_PHOTOS && (
+                {existingPhotoCount + photos.length < MAX_PHOTOS && (
                   <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-gray-300 bg-gray-25 text-sm text-gray-500 hover:bg-gray-50 has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-brand-100">
                     <ImagePlus aria-hidden />
                     Add photos
@@ -249,9 +295,21 @@ export function ItemForm({
             )
           }
         >
-          <Button variant="secondary" onClick={() => router.push(listUrl)}>
-            {canEdit ? "Cancel" : "Back"}
-          </Button>
+          {isDirty ? (
+            <ConfirmDialog
+              trigger={<Button variant="secondary">Cancel</Button>}
+              title="Discard changes?"
+              description="You have unsaved changes. If you leave now, they'll be lost."
+              confirmLabel="Discard"
+              cancelLabel="Keep editing"
+              destructive
+              onConfirm={handleCancel}
+            />
+          ) : (
+              <Button variant="secondary" onClick={handleCancel}>
+                {canEdit ? "Cancel" : "Back"}
+              </Button>
+          )}
           {canEdit && (
             <Button onClick={handleSave} disabled={saving}>
               {saving ? (progress || "Saving...") : item ? "Save changes" : "Add item"}

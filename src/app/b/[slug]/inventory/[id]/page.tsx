@@ -77,6 +77,8 @@ export default async function ItemPage({
         canEdit={can(access, PERMISSIONS.INVENTORY_EDIT)}
         canDelete={can(access, PERMISSIONS.INVENTORY_DELETE)}
         canViewCost={canViewCost}
+        canAddPhotos={can(access, PERMISSIONS.INVENTORY_EDIT)}
+        existingPhotoCount={item.images.length}
       />
     </div>
   );

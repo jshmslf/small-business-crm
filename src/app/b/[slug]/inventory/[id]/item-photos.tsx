@@ -1,18 +1,16 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { ImageIcon, ImagePlus, Star, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { ImageIcon, Star, Trash2 } from "lucide-react";
 import { imageVariant } from "@/src/lib/image-url";
 import { cn } from "@/src/lib/utils";
-import { buttonVariants } from "@/src/components/ui/button";
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { Badge } from "@/src/components/status-badge";
 import { EmptyState } from "@/src/components/empty-state";
 import { Notice } from "@/src/components/form-field";
 import { ConfirmDialog } from "@/src/components/confirm-dialog";
 import { IconButton } from "@/src/components/icon-button";
 import { deleteItemImage, makeCoverImage } from "./photo-actions";
-import { uploadOne } from "../upload-photo";
 
 export function ItemPhotos({
   slug,
@@ -25,33 +23,8 @@ export function ItemPhotos({
   photos: { id: string; url: string }[];
   canEdit: boolean;
 }) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [remaining, setRemaining] = useState(0);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState("");
-
-
-  async function handleFiles(files: FileList | null) {
-    if (!files?.length) return;
-    setError("");
-    const list = Array.from(files);
-    setRemaining(list.length);
-
-    // One at a time, so photos keep the order you selected them in
-    for (const file of list) {
-      try {
-        await uploadOne(slug, itemId, file);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Upload failed.");
-        break;
-      } finally {
-        setRemaining((n) => n - 1);
-      }
-    }
-
-    setRemaining(0);
-    if (inputRef.current) inputRef.current.value = "";
-  }
 
   async function handleDelete(id: string) {
     setBusyId(id);
@@ -71,22 +44,6 @@ export function ItemPhotos({
     <Card className="max-w-3xl">
       <CardHeader>
         <CardTitle>Photos ({photos.length}/10)</CardTitle>
-        {canEdit && (
-          <CardAction>
-            <label
-              className={cn(
-                buttonVariants({ variant: "secondary", size: "sm" }),
-                "cursor-pointer has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-brand-100",
-                remaining > 0 && "pointer-events-none opacity-50"
-              )}
-            >
-              <ImagePlus aria-hidden />
-              {remaining ? `Uploading ${remaining}...` : "Add photos"}
-              <input ref={inputRef} type="file" accept="image/*" multiple className="sr-only"
-                disabled={remaining > 0} onChange={(e) => handleFiles(e.target.files)} />
-            </label>
-          </CardAction>
-        )}
       </CardHeader>
 
       <CardContent className="space-y-4">
@@ -97,7 +54,7 @@ export function ItemPhotos({
             <EmptyState
               icon={ImageIcon}
               title="No photos yet"
-              description={canEdit ? "The first photo you add becomes the cover." : undefined}
+              description={canEdit ? "Add photos in the form below." : undefined}
               className="py-8"
             />
           </div>
