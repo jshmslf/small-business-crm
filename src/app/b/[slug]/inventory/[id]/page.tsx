@@ -7,15 +7,15 @@ import { ItemForm } from "../item-form";
 import { ItemPhotos } from "./item-photos";
 import { PageHeader } from "@/src/components/page-header";
 import { Meta } from "@/src/components/data-table";
-import { Notice } from "@/src/components/form-field";
+import { PhotosFailedNotice } from "./photos-failed-notice";
 
 export default async function ItemPage({
   params,
   searchParams,
 }: {
-    params: Promise<{ slug: string; id: string }>;
-    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-  }) {
+  params: Promise<{ slug: string; id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const { slug, id } = await params;
   const { photos } = await searchParams;
   const { access } = await requireBusinessAccess(slug);
@@ -58,11 +58,7 @@ export default async function ItemPage({
           ]} />
         }
       />
-      {photos === "failed" && (
-        <Notice tone="warning" className="max-w-3xl">
-          The item was saved, but some photos didn&apos;t upload. You can add them below.
-        </Notice>
-      )}
+      {photos === "failed" && <PhotosFailedNotice />}
       <ItemPhotos
         slug={slug}
         itemId={item.id}

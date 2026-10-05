@@ -13,7 +13,8 @@ import { Textarea } from "@/src/components/ui/textarea";
 import { Field, FormActions, FormSection, Notice } from "@/src/components/form-field";
 import { ConfirmDialog } from "@/src/components/confirm-dialog";
 import { checkPhoto, MAX_PHOTOS, uploadOne } from "./upload-photo";
-import { ImagePlus, X } from "lucide-react";
+import { ImagePlus, Star, X } from "lucide-react";
+import { cn } from "@/src/lib/utils";
 import { IconButton } from "@/src/components/icon-button";
 import { Badge } from "@/src/components/status-badge";
 
@@ -33,15 +34,15 @@ export function ItemForm({
   canAddPhotos = false,
   existingPhotoCount = 0,
 }: {
-    slug: string;
-    sellers: { id: string; name: string }[];
-    categories: string[];
-    item?: ItemInput & { id: string };
-    canEdit?: boolean;
-    canDelete?: boolean;
-    canAddPhotos?: boolean;
-    existingPhotoCount?: number;
-    canViewCost?: boolean;
+  slug: string;
+  sellers: { id: string; name: string }[];
+  categories: string[];
+  item?: ItemInput & { id: string };
+  canEdit?: boolean;
+  canDelete?: boolean;
+  canAddPhotos?: boolean;
+  existingPhotoCount?: number;
+  canViewCost?: boolean;
 }) {
   const router = useRouter();
   const [form, setForm] = useState<ItemInput>(item ?? emptyItem);
@@ -51,6 +52,7 @@ export function ItemForm({
   const [progress, setProgress] = useState("");
 
   const [photos, setPhotos] = useState<{ file: File; preview: string }[]>([]);
+  const [dragging, setDragging] = useState(false);
 
   function update(field: keyof ItemInput, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -80,6 +82,11 @@ export function ItemForm({
     });
   }
 
+  // Move a staged photo to the front; it uploads first, so it becomes the cover
+  function makeStagedCover(index: number) {
+    setPhotos((prev) => [prev[index], ...prev.filter((_, i) => i !== index)]);
+  }
+
   function handleCancel() {
     photos.forEach((p) => URL.revokeObjectURL(p.preview));
     setPhotos([]);
@@ -87,11 +94,11 @@ export function ItemForm({
     setError("");
     router.push(listUrl);
   }
-  
+
   const photosRef = useRef(photos);
 
   useEffect(() => {
-    photosRef.current = photos;    
+    photosRef.current = photos;
   }, [photos]);
 
   useEffect(() => {
@@ -102,7 +109,7 @@ export function ItemForm({
   const isDirty =
     photos.length > 0 ||
     (Object.keys(emptyItem) as (keyof ItemInput)[]).some((key) => form[key] !== initial[key]);
-  
+
   useEffect(() => {
     if (!isDirty) return;
     function warn(e: BeforeUnloadEvent) {
@@ -119,12 +126,12 @@ export function ItemForm({
     cost.ok && selling.ok && cost.value !== null && selling.value !== null ? selling.value - cost.value : null;
   const margin = profit !== null && selling.ok && selling.value ? Math.round((profit / selling.value) * 100) : null;
 
-  // uploads the staged photos in order, rerturn true if any failed
+  // Uploads the staged photos in order. Returns true if any failed.
   async function uploadStaged(itemId: string) {
     for (const [i, p] of photos.entries()) {
       setProgress(`Uploading photo ${i + 1} of ${photos.length}...`);
       try { await uploadOne(slug, itemId, p.file); }
-      catch { return true }
+      catch { return true; }
     }
     return false;
   }
@@ -136,12 +143,13 @@ export function ItemForm({
     if (item) {
       const result = await updateItem(slug, item.id, form);
       if (!result.ok) {
-        setSaving(false); return setError(result.error)
-      };
+        setSaving(false);
+        return setError(result.error);
+      }
 
       const failed = await uploadStaged(item.id);
       if (failed) {
-        // we stay on this same page, so the form is not remounted
+        // We stay on this same page, so the form is not remounted: reset it ourselves
         photos.forEach((p) => URL.revokeObjectURL(p.preview));
         setPhotos([]);
         setSaving(false);
@@ -157,13 +165,7 @@ export function ItemForm({
       return setError(result.ok ? "Could not save the item." : result.error);
     }
 
-    let failed = false;
-    for (const [i, p] of photos.entries()) {
-      setProgress(`Uploading photo ${i + 1} of ${photos.length}...`);
-      try { await uploadOne(slug, result.id, p.file); }
-      catch { failed = true; break; }
-    }
-
+    const failed = await uploadStaged(result.id);
     router.push(`${listUrl}/${result.id}${failed ? "?photos=failed" : ""}`);
   }
 
@@ -247,8 +249,12 @@ export function ItemForm({
                 onChange={(e) => update("acquiredAt", e.target.value)} />
             </Field>
           </FormSection>
+
           {canAddPhotos && (
-            <FormSection title={item ? "New photos" : "Photos"} description={item ? "These upload when you save changes." : "Optional. The first photo becomes the cover."} columns={1}
+            <FormSection
+              title={item ? "New photos" : "Photos"}
+              description={item ? "These upload when you save changes." : "Optional. The first photo becomes the cover."}
+              columns={1}
             >
               <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
                 {photos.map((p, index) => (
@@ -256,17 +262,37 @@ export function ItemForm({
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={p.preview} alt="" className="aspect-square w-full object-cover" />
                     {index === 0 && existingPhotoCount === 0 && <Badge tone="brand" className="absolute top-2 left-2 shadow-xs">Cover</Badge>}
-                    <IconButton label="Remove" size="icon-xs" variant="secondary"
-                      className="absolute right-1.5 bottom-1.5" onClick={() => removePhoto(index)}>
-                      <X />
-                    </IconButton>
+                    <div className="absolute right-1.5 bottom-1.5 flex gap-1">
+                      {index !== 0 && existingPhotoCount === 0 && (
+                        <IconButton label="Make cover" size="icon-xs" variant="secondary"
+                          onClick={() => makeStagedCover(index)}>
+                          <Star />
+                        </IconButton>
+                      )}
+                      <IconButton label="Remove" size="icon-xs" variant="secondary"
+                        onClick={() => removePhoto(index)}>
+                        <X />
+                      </IconButton>
+                    </div>
                   </div>
                 ))}
 
                 {existingPhotoCount + photos.length < MAX_PHOTOS && (
-                  <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-gray-300 bg-gray-25 text-sm text-gray-500 hover:bg-gray-50 has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-brand-100">
-                    <ImagePlus aria-hidden />
-                    Add photos
+                  <label
+                    className={cn(
+                      "flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-gray-300 bg-gray-25 text-sm text-gray-500 hover:bg-gray-50 has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-brand-100",
+                      dragging && "border-brand-300 bg-brand-25 text-brand-700"
+                    )}
+                    onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                    onDragLeave={() => setDragging(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setDragging(false);
+                      if (!saving) handlePick(e.dataTransfer.files);
+                    }}
+                  >
+                    <ImagePlus aria-hidden className="pointer-events-none" />
+                    {dragging ? "Drop to add" : "Add photos"}
                     <input type="file" accept="image/*" multiple className="sr-only"
                       onChange={(e) => { handlePick(e.target.files); e.target.value = ""; }} />
                   </label>
@@ -274,7 +300,6 @@ export function ItemForm({
               </div>
             </FormSection>
           )}
-
         </fieldset>
 
         {error && <Notice tone="error" className="mt-6">{error}</Notice>}
@@ -306,9 +331,9 @@ export function ItemForm({
               onConfirm={handleCancel}
             />
           ) : (
-              <Button variant="secondary" onClick={handleCancel}>
-                {canEdit ? "Cancel" : "Back"}
-              </Button>
+            <Button variant="secondary" onClick={handleCancel}>
+              {canEdit ? "Cancel" : "Back"}
+            </Button>
           )}
           {canEdit && (
             <Button onClick={handleSave} disabled={saving}>
