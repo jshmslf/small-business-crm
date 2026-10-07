@@ -94,6 +94,24 @@ export async function addItemImage(
   return { ok: true };
 }
 
+// Removes a Cloudinary upload that never got saved (addItemImage failed after the upload)
+export async function discardUpload(slug: string, itemId: string, publicId: string): Promise<Result> {
+  const found = await getEditableItem(slug, itemId);
+  if (!found) return { ok: false, error: "You can't edit this item's photos." };
+
+  // Only files in this item's folder
+  if (!publicId.startsWith(`${itemFolder(found.businessId, itemId)}/`)) {
+    return { ok: false, error: "Invalid upload." };
+  }
+
+  // If the save did go through (only the response was lost), the photo is real: keep it
+  const saved = await prisma.itemImage.findFirst({ where: { publicId } });
+  if (saved) return { ok: true };
+
+  await cloudinary.uploader.destroy(publicId).catch(() => {});
+  return { ok: true };
+}
+
 export async function deleteItemImage(slug: string, itemId: string, imageId: string): Promise<Result> {
   const found = await getEditableItem(slug, itemId);
   if (!found) return { ok: false, error: "You can't edit this item's photos." };

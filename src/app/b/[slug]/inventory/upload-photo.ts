@@ -1,4 +1,4 @@
-import { addItemImage, getUploadSignature } from "./[id]/photo-actions";
+import { addItemImage, discardUpload, getUploadSignature } from "./[id]/photo-actions";
 import { compressImage } from "@/src/lib/compress-image";
 
 export const MAX_SIZE = 10 * 1024 * 1024;
@@ -38,6 +38,17 @@ export async function uploadOne(slug: string, itemId: string, file: File) {
     const data = await res.json();
 
     // 3. Tell your server to save it
-    const saved = await addItemImage(slug, itemId, { publicId: data.public_id, url: data.secure_url });
-    if (!saved.ok) throw new Error(saved.error);
+    let error: string | null;
+    try {
+        const saved = await addItemImage(slug, itemId, { publicId: data.public_id, url: data.secure_url });
+        error = saved.ok ? null : saved.error;
+    } catch {
+        error = `Couldn't save ${file.name}.`;
+    }
+
+    // Saving failed, so don't leave the file sitting in Cloudinary (best effort)
+    if (error) {
+        await discardUpload(slug, itemId, data.public_id).catch(() => {});
+        throw new Error(error);
+    }
 }
