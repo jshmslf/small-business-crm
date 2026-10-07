@@ -1,4 +1,5 @@
 import { addItemImage, getUploadSignature } from "./[id]/photo-actions";
+import { compressImage } from "@/src/lib/compress-image";
 
 export const MAX_SIZE = 10 * 1024 * 1024;
 export const MAX_PHOTOS = 10;
@@ -14,13 +15,16 @@ export async function uploadOne(slug: string, itemId: string, file: File) {
 
     if (problem) throw new Error(problem);
 
+    // Shrink big phone photos first so the upload is faster
+    const upload = await compressImage(file);
+
     // 1. Ask your server for permission
     const sig = await getUploadSignature(slug, itemId);
     if (!sig.ok) throw new Error(sig.error);
 
     // 2. Upload straight to Cloudinary
     const body = new FormData();
-    body.append("file", file);
+    body.append("file", upload);
     body.append("api_key", sig.apiKey);
     body.append("timestamp", String(sig.timestamp));
     body.append("signature", sig.signature);
