@@ -1,5 +1,6 @@
 import { AppSidebar, type NavItem, type ShellProps } from "@/src/components/app-sidebar";
 import { MobileNav } from "@/src/components/mobile-nav";
+import { LeaveGuard } from "@/src/components/leave-guard";
 import { can, requireBusinessAccess } from "@/src/lib/access";
 import { PERMISSIONS } from "@/src/lib/permissions";
 
@@ -40,6 +41,7 @@ export default async function BusinessLayout({
                 <AppSidebar {...shell} />
             </aside>
             <MobileNav {...shell} />
+            <LeaveGuard />
             <div className="lg:pl-[280px]">
                 <main className="mx-auto w-full max-w-[1280px] px-4 py-6 sm:px-8 sm:py-8">{children}</main>
             </div>

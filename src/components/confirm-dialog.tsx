@@ -15,9 +15,12 @@ import {
 /**
  * Replaces window.confirm(). `onConfirm` runs what used to run after confirm()
  * returned true; the dialog closes once it finishes.
+ * Pass `open` / `onOpenChange` (and no trigger) to open it from code instead.
  */
 export function ConfirmDialog({
   trigger,
+  open: openProp,
+  onOpenChange,
   title,
   description,
   confirmLabel,
@@ -25,7 +28,9 @@ export function ConfirmDialog({
   destructive = false,
   onConfirm,
 }: {
-  trigger: React.ReactNode;
+  trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   title: React.ReactNode;
   description?: React.ReactNode;
   confirmLabel: string;
@@ -33,8 +38,14 @@ export function ConfirmDialog({
   destructive?: boolean;
   onConfirm: () => unknown;
 }) {
-  const [open, setOpen] = useState(false);
+  const [innerOpen, setInnerOpen] = useState(false);
   const [pending, setPending] = useState(false);
+  const open = openProp ?? innerOpen;
+
+  function setOpen(next: boolean) {
+    setInnerOpen(next);
+    onOpenChange?.(next);
+  }
 
   async function handleConfirm() {
     setPending(true);
@@ -48,7 +59,7 @@ export function ConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !pending && setOpen(o)}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="sm:max-w-md" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
