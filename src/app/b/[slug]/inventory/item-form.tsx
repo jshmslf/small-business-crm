@@ -12,6 +12,8 @@ import { NativeSelect, NativeSelectOption } from "@/src/components/ui/native-sel
 import { Textarea } from "@/src/components/ui/textarea";
 import { Field, FormActions, FormSection, Notice } from "@/src/components/form-field";
 import { ConfirmDialog } from "@/src/components/confirm-dialog";
+import { CancelButton } from "@/src/components/cancel-button";
+import { hasChanges, useWarnOnLeave } from "@/src/lib/unsaved-changes";
 import { checkPhoto, MAX_PHOTOS, uploadOne } from "./upload-photo";
 import { ImagePlus, Star, X } from "lucide-react";
 import { cn } from "@/src/lib/utils";
@@ -105,19 +107,8 @@ export function ItemForm({
     return () => photosRef.current.forEach((p) => URL.revokeObjectURL(p.preview));
   }, []);
 
-  const initial = item ?? emptyItem;
-  const isDirty =
-    photos.length > 0 ||
-    (Object.keys(emptyItem) as (keyof ItemInput)[]).some((key) => form[key] !== initial[key]);
-
-  useEffect(() => {
-    if (!isDirty) return;
-    function warn(e: BeforeUnloadEvent) {
-      e.preventDefault();
-    }
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [isDirty]);
+  const isDirty = photos.length > 0 || hasChanges(form, item ?? emptyItem);
+  useWarnOnLeave(isDirty);
 
   // Live profit preview
   const cost = parsePeso(form.costPrice);
@@ -320,21 +311,9 @@ export function ItemForm({
             )
           }
         >
-          {isDirty ? (
-            <ConfirmDialog
-              trigger={<Button variant="secondary">Cancel</Button>}
-              title="Discard changes?"
-              description="You have unsaved changes. If you leave now, they'll be lost."
-              confirmLabel="Discard"
-              cancelLabel="Keep editing"
-              destructive
-              onConfirm={handleCancel}
-            />
-          ) : (
-            <Button variant="secondary" onClick={handleCancel}>
-              {canEdit ? "Cancel" : "Back"}
-            </Button>
-          )}
+          <CancelButton dirty={isDirty} onCancel={handleCancel}>
+            {canEdit ? "Cancel" : "Back"}
+          </CancelButton>
           {canEdit && (
             <Button onClick={handleSave} disabled={saving}>
               {saving ? (progress || "Saving...") : item ? "Save changes" : "Add item"}

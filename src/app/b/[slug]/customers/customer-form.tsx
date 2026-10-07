@@ -11,6 +11,8 @@ import { NativeSelect, NativeSelectOption } from "@/src/components/ui/native-sel
 import { Textarea } from "@/src/components/ui/textarea";
 import { Field, FormActions, FormSection, Notice } from "@/src/components/form-field";
 import { ConfirmDialog } from "@/src/components/confirm-dialog";
+import { CancelButton } from "@/src/components/cancel-button";
+import { hasChanges, useWarnOnLeave } from "@/src/lib/unsaved-changes";
 
 const emptyCustomer: CustomerInput = {
   firstName: "", lastName: "", phone: "", email: "", facebookName: "",
@@ -36,6 +38,9 @@ export function CustomerForm({
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const listUrl = `/b/${slug}/customers`;
+
+  const isDirty = hasChanges(form, customer ?? emptyCustomer);
+  useWarnOnLeave(isDirty);
 
   function update(field: keyof CustomerInput, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -136,9 +141,9 @@ export function CustomerForm({
             )
           }
         >
-          <Button variant="secondary" onClick={() => router.push(listUrl)}>
+          <CancelButton dirty={isDirty} onCancel={() => router.push(listUrl)}>
             {canEdit ? "Cancel" : "Back"}
-          </Button>
+          </CancelButton>
           {canEdit && (
             <Button onClick={handleSave} disabled={saving}>
               {saving ? "Saving..." : customer ? "Save changes" : "Add customer"}

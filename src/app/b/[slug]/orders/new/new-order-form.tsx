@@ -18,6 +18,7 @@ import { EmptyState } from "@/src/components/empty-state";
 import { EmptyRow, TableCard } from "@/src/components/data-table";
 import { SearchInput } from "@/src/components/filter-bar";
 import { IconButton } from "@/src/components/icon-button";
+import { useWarnOnLeave } from "@/src/lib/unsaved-changes";
 
 type PickerItem = {
   id: string; name: string; sku: string | null; category: string | null;
@@ -84,6 +85,14 @@ export function NewOrderForm({ slug, customers, items }: {
   const subtotal = lines.reduce((sum, l) => sum + toCentavos(l.unitPrice) * l.quantity, 0);
   const total = subtotal - toCentavos(discount) + toCentavos(shippingFee);
   const needsAddress = fulfillmentType === "DELIVERY" || fulfillmentType === "SHIPPING";
+
+  const isDirty =
+    lines.length > 0 ||
+    channel !== "FACEBOOK" ||
+    fulfillmentType !== "PICKUP" ||
+    [customerId, deliveryAddress, notes, discount, shippingFee, payment.amount, payment.reference]
+      .some((value) => value.trim() !== "");
+  useWarnOnLeave(isDirty);
 
   async function handleSave() {
     setError("");

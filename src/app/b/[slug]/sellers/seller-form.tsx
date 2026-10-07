@@ -9,6 +9,8 @@ import { Input } from "@/src/components/ui/input";
 import { Textarea } from "@/src/components/ui/textarea";
 import { Field, FormActions, FormSection, Notice } from "@/src/components/form-field";
 import { ConfirmDialog } from "@/src/components/confirm-dialog";
+import { CancelButton } from "@/src/components/cancel-button";
+import { hasChanges, useWarnOnLeave } from "@/src/lib/unsaved-changes";
 
 const emptySeller: SellerInput = { name: "", phone: "", email: "", facebookName: "", address: "", notes: "" };
 
@@ -30,6 +32,9 @@ export function SellerForm({
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const listUrl = `/b/${slug}/sellers`;
+
+  const isDirty = hasChanges(form, seller ?? emptySeller);
+  useWarnOnLeave(isDirty);
 
   function update(field: keyof SellerInput, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -102,9 +107,9 @@ export function SellerForm({
             )
           }
         >
-          <Button variant="secondary" onClick={() => router.push(listUrl)}>
+          <CancelButton dirty={isDirty} onCancel={() => router.push(listUrl)}>
             {canEdit ? "Cancel" : "Back"}
-          </Button>
+          </CancelButton>
           {canEdit && (
             <Button onClick={handleSave} disabled={saving}>
               {saving ? "Saving..." : seller ? "Save changes" : "Add seller"}
